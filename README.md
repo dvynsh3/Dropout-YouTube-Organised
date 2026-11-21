@@ -4,7 +4,7 @@ A fully client-side browser for [Dropout.tv](https://www.dropout.tv)'s public Yo
 
 **Live:** https://dvynsh3.github.io/Dropout-YouTube-Organised
 
-![Screenshot](assets/Screenshot 2026-11-22 004239.png)
+![Screenshot](assets/"Screenshot 2026-11-22 004239.png")
 
 ## Pre-requisites
 - You will need an active YouTube membership to Dropout's YouTube channel, this doesn't bypass that, only categorises the content better than YouTube's native playlists page.
