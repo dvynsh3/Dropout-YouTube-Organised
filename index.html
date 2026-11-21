@@ -1,0 +1,1699 @@
+<!DOCTYPE html>
+<!--
+  Dropout YouTube Organised
+  Copyright (C) 2026 dvynsh3
+  Playlist-ID cross-referencing derived from soitchu/unofficial-dropout-youtube-browser (GPL-3.0).
+
+  This program is free software: you can redistribute it and/or modify it under the terms of the
+  GNU General Public License as published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version. It is distributed WITHOUT ANY WARRANTY; without
+  even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the LICENSE
+  file or <https://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dropout Browser (Local)</title>
+<style>
+  :root{
+    --bg:#0a0a0b;
+    --bg2:#151517;
+    --surface:#1d1d20;
+    --surface2:#252529;
+    --yellow:#f2c94a;
+    --yellow-bright:#ffe066;
+    --text:#f3f3f0;
+    --muted:#9a9a9f;
+    --danger:#e5484d;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;}
+  a{color:inherit;}
+  img{display:block;max-width:100%;}
+  button{font-family:inherit;cursor:pointer;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:5px;}
+
+  header.nav{
+    position:sticky;top:0;z-index:40;
+    display:flex;align-items:center;gap:24px;
+    padding:16px 28px;background:#000;border-bottom:1px solid #1f1f22;
+  }
+  .logo{display:flex;align-items:center;white-space:nowrap;}
+  .logo img{height:56px;width:auto;display:block;}
+  nav.links{display:flex;gap:22px;flex:1;overflow-x:auto;}
+  nav.links button{
+    background:none;border:none;color:var(--text);font-weight:700;font-size:13px;
+    letter-spacing:.06em;text-transform:uppercase;opacity:.85;padding:6px 2px;
+    border-bottom:2px solid transparent;white-space:nowrap;
+  }
+  nav.links button.active,nav.links button:hover{opacity:1;border-bottom-color:var(--yellow);}
+  .searchbox{display:flex;align-items:center;background:var(--surface);border-radius:20px;
+    padding:6px 14px;gap:8px;min-width:170px;}
+  .searchbox input{background:none;border:none;outline:none;color:var(--text);font-size:13px;width:150px;}
+  .iconbtn{background:none;border:none;color:var(--text);font-size:18px;opacity:.85;padding:4px 6px;border-radius:50%;}
+  .iconbtn:hover{opacity:1;background:var(--surface);}
+
+  main{padding:28px;max-width:1400px;margin:0 auto;}
+  .pill{background:var(--surface);color:var(--text);border:1px solid #333;border-radius:6px;
+    padding:8px 12px;font-size:13px;font-weight:600;}
+
+  .stickybar{position:sticky;top:var(--navh,64px);z-index:25;background:var(--bg);
+    padding:14px 0 16px;}
+  #favBar{z-index:20;}
+  #favBarD20{z-index:20;}
+  .pagehead{padding:18px 0 16px;}
+  .toprow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  h1.pagetitle{font-size:22px;letter-spacing:.02em;margin:0;}
+  .shopcount{color:var(--muted);font-size:12.5px;}
+  .showmorebtn{background:none;border:none;color:var(--yellow-bright);font-weight:700;font-size:12.5px;
+    letter-spacing:.02em;}
+  .showmorebtn:hover{text-decoration:underline;}
+
+  .sortctrl{display:flex;align-items:center;gap:8px;margin-left:auto;}
+  .sortpill{background:var(--surface);color:var(--text);border:1px solid #333;border-radius:20px;
+    padding:8px 16px;font-size:12.5px;font-weight:700;min-width:128px;text-align:center;letter-spacing:.02em;}
+  .sortpill:hover{background:var(--surface2);border-color:#444;}
+  .sortdir{background:var(--surface);color:var(--text);border:1px solid #333;border-radius:50%;
+    width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:700;}
+  .sortdir:hover{background:var(--surface2);border-color:#444;}
+
+  .favrow{display:flex;gap:18px;overflow-x:auto;padding:14px 2px 12px 14px;margin-bottom:8px;scrollbar-width:none;-ms-overflow-style:none;}
+  .favrow::-webkit-scrollbar{display:none;width:0;height:0;}
+  .favwrap .sechead{margin-bottom:0;}
+  .favrow .showcard{flex:0 0 220px;width:220px;aspect-ratio:16/9;}
+  .favrow .showcard.ghost{background:var(--surface);border:1px dashed #2a2a2e;cursor:default;}
+  .favrow .showcard.ghost:hover{transform:none;box-shadow:none;}
+  .rowcover{position:sticky;right:0;flex:0 0 117px;width:117px;margin-left:-132px;align-self:stretch;
+    background:rgba(0,0,0,.72);border-radius:0;display:flex;
+    align-items:center;justify-content:center;z-index:5;}
+  .rowcover::after{content:"";position:absolute;top:0;bottom:0;left:100%;width:40px;background:var(--bg);}
+  .rowmorebtn{width:40px;height:40px;border-radius:50%;border:2px solid var(--yellow-bright);
+    background:rgba(0,0,0,.5);color:var(--yellow-bright);padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .rowmorebtn svg{width:22px;height:22px;display:block;}
+  button svg.arr{width:16px;height:16px;display:block;}
+  button:has(> svg.arr){display:inline-flex;align-items:center;justify-content:center;}
+  .barhead{font-size:16px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--yellow-bright);margin:0;}
+  .barcount{color:var(--muted);font-size:12px;}
+  .freeitem{display:flex;gap:8px;align-items:center;margin:6px 0;font-size:13px;}
+  .rowmorebtn:hover{background:var(--yellow-bright);color:#000;}
+  #latestBar{z-index:20;}
+
+  .showsection{margin-bottom:34px;}
+  .showsection .sechead{display:flex;align-items:center;gap:10px;margin-bottom:14px;
+    position:sticky;top:var(--navh,64px);z-index:22;background:var(--bg);padding:10px 0;flex-wrap:wrap;}
+  .showsection .sechead h2{font-size:16px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--yellow-bright);margin:0;}
+  .showsection .sechead .seccount{color:var(--muted);font-size:12px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+  .showcard{position:relative;border-radius:var(--radius);overflow:visible;background:var(--surface);
+    aspect-ratio:16/9;cursor:pointer;border:1px solid #222;transition:transform .15s ease,box-shadow .15s ease;}
+  .showcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.5);border-color:#3a3a3e;}
+  .showcard.unavailable{cursor:default;opacity:.55;}
+  .showcard img{width:100%;height:100%;object-fit:cover;}
+  .showcard > img,.showcard > .placeholder,.showcard > .grad{border-radius:calc(var(--radius) - 1px);}
+  .showcard .ribbon{position:absolute;top:12px;left:-9px;z-index:3;background:var(--yellow-bright);color:#000;
+    font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:4px 10px 4px 14px;
+    border-radius:0 4px 4px 0;box-shadow:0 2px 6px rgba(0,0,0,.5);}
+  .showcard .ribbon::before{content:"";position:absolute;left:0;top:100%;border-style:solid;
+    border-width:6px 0 0 9px;border-color:#7a6c00 transparent transparent transparent;}
+  .showcard .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:15px;text-align:center;padding:14px;color:rgba(255,255,255,.5);
+    background:linear-gradient(135deg,#2a2a2e,#151517);}
+  .showcard .grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.25) 55%,rgba(0,0,0,0) 100%);}
+  .showcard .label{position:absolute;left:0;right:0;bottom:0;padding:12px;}
+  .showcard .label .t{font-weight:800;font-size:15px;line-height:1.2;}
+  .showcard .label .s{font-size:11px;color:var(--muted);margin-top:3px;}
+  .showcard .badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.6);color:var(--muted);
+    font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.03em;}
+  .showcard .star{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.55);border:none;
+    color:var(--yellow-bright);font-size:15px;border-radius:50%;width:28px;height:28px;opacity:0;transition:opacity .15s;}
+  .showcard:hover .star{opacity:1;}
+  .showcard .star.active{opacity:1;}
+  .empty{color:var(--muted);padding:60px 0;text-align:center;font-size:14px;}
+
+  .ctxmenu{position:fixed;z-index:200;background:var(--bg2);border:1px solid #333;border-radius:8px;
+    box-shadow:0 12px 30px rgba(0,0,0,.6);padding:6px;min-width:190px;display:flex;flex-direction:column;}
+  .ctxmenu button{background:none;border:none;color:var(--text);text-align:left;font-size:13px;
+    padding:9px 12px;border-radius:5px;white-space:nowrap;}
+  .ctxmenu button:hover{background:var(--surface2);}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:20px;}
+  .panel{background:var(--bg2);border:1px solid #2a2a2e;border-radius:10px;max-width:480px;width:100%;
+    padding:28px;max-height:90vh;overflow-y:auto;}
+  .panel h2{margin-top:0;color:var(--yellow-bright);font-size:19px;}
+  .panel p{font-size:13.5px;line-height:1.6;color:#cfcfcf;}
+  .panel ol{font-size:13.5px;line-height:1.7;color:#cfcfcf;padding-left:20px;}
+  .panel input[type=text],.panel input[type=password]{
+    width:100%;padding:10px 12px;border-radius:6px;border:1px solid #333;background:var(--surface);
+    color:var(--text);font-size:14px;margin:10px 0;outline:none;}
+  .panel input:focus{border-color:var(--yellow);}
+  .btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+  .btn{background:var(--yellow);color:#141414;border:none;padding:10px 18px;border-radius:6px;
+    font-weight:800;font-size:13px;letter-spacing:.02em;}
+  .btn:hover{background:var(--yellow-bright);}
+  .btn.secondary{background:var(--surface2);color:var(--text);}
+  .btn.secondary:hover{background:#33333a;}
+  .btn.danger{background:transparent;color:var(--danger);border:1px solid var(--danger);}
+  .closepanel{float:right;background:none;border:none;color:var(--muted);font-size:20px;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;overflow-y:auto;}
+  .modal{background:var(--bg);min-height:100%;max-width:1200px;margin:0 auto;box-shadow:0 0 60px rgba(0,0,0,.6);}
+  .hero{position:relative;aspect-ratio:21/8;min-height:220px;overflow:hidden;background:var(--surface);}
+  .hero img{width:100%;height:100%;object-fit:cover;}
+  .hero .placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:clamp(20px,3vw,32px);color:rgba(255,255,255,.35);
+    background:linear-gradient(135deg,#2a2a2e,#151517);}
+  .hero .grad{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 2%,rgba(10,10,11,.35) 45%,rgba(10,10,11,.1) 100%),
+    linear-gradient(to right, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 55%);}
+  .hero .content{position:absolute;left:32px;bottom:26px;right:32px;}
+  .hero .content h2{font-size:clamp(24px,4vw,40px);margin:0 0 6px;font-weight:900;}
+  .hero .content .meta{color:#d7d7d7;font-size:13px;margin-bottom:14px;max-width:640px;}
+  .hero .actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .hero .actions .btn.secondary{background:rgba(255,255,255,.12);backdrop-filter:blur(4px);}
+  .closemodal{position:absolute;top:16px;right:20px;z-index:5;background:rgba(0,0,0,.5);border:none;
+    color:var(--text);font-size:22px;width:38px;height:38px;border-radius:50%;}
+  .closemodal:hover{background:rgba(0,0,0,.8);}
+  .modalbody{padding:24px 32px 60px;}
+  .controls{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+  .iconbtn2{background:var(--surface);border:1px solid #333;color:var(--text);border-radius:6px;
+    padding:8px 12px;font-size:14px;font-weight:700;line-height:1;}
+  .iconbtn2:hover{background:var(--surface2);border-color:#444;}
+  .iconbtn2:disabled{opacity:.32;cursor:not-allowed;}
+  .iconbtn2:disabled:hover{background:var(--surface);border-color:#333;}
+  .sortbtn{margin-left:auto;font-size:16px;}
+  .epcount{color:var(--muted);font-size:13px;}
+  .radiorow{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap;}
+  .radiorow label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:#cfcfcf;cursor:pointer;}
+  .radiorow input{accent-color:var(--yellow-bright);width:15px;height:15px;cursor:pointer;}
+  .epgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px;}
+  .epcard{cursor:pointer;}
+  .thumbwrap{position:relative;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;background:var(--surface);}
+  .thumbwrap img{width:100%;height:100%;object-fit:cover;transition:filter .15s;}
+  .epcard.watched .thumbwrap img{filter:grayscale(1) brightness(.45);}
+  .epcard.watched .thumbwrap::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.15);}
+  .duration{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.8);color:#fff;font-size:11px;
+    padding:2px 6px;border-radius:4px;font-weight:600;}
+  .watchtoggle{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;
+    background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:14px;
+    display:flex;align-items:center;justify-content:center;opacity:.75;z-index:2;}
+  .watchtoggle:hover{opacity:1;}
+  .epcard.watched .watchtoggle{background:var(--yellow);color:#141414;border-color:var(--yellow);opacity:1;}
+  .bulkwatch{position:absolute;top:6px;right:36px;width:26px;height:26px;border-radius:50%;
+    background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:12px;
+    display:flex;align-items:center;justify-content:center;opacity:.6;z-index:2;}
+  .bulkwatch:hover{opacity:1;}
+  .eptitle{margin-top:8px;font-size:13.5px;font-weight:700;line-height:1.3;}
+  .epsub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .epcard.watched .eptitle,.epcard.watched .epsub{color:#6e6e72;}
+  .loadingrow{color:var(--muted);padding:40px 0;text-align:center;font-size:13px;}
+  .unavailrow{color:var(--muted);padding:40px 20px;text-align:center;font-size:14px;line-height:1.6;}
+
+  footer.hint{max-width:1400px;margin:0 auto;padding:6px 28px 40px;color:#55555a;font-size:11.5px;}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="logo"><img src="data:image/png;base64,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" alt="Dropout"></div>
+  <nav class="links">
+    <button class="tab active" data-tab="browse">All Shows</button>
+    <button class="tab" data-tab="latest">Latest</button>
+    <button class="tab" data-tab="d20">Dimension 20</button>
+    <button class="tab" data-tab="favorites">My List</button>
+  </nav>
+  <div class="searchbox">
+    <span>&#128269;</span>
+    <input type="text" id="searchInput" placeholder="Search shows..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="dropout-show-search" data-lpignore="true" data-1p-ignore data-bwignore>
+  </div>
+  <button class="iconbtn" id="refreshBtn" title="Refresh data">&#8635;</button>
+  <button class="iconbtn" id="settingsBtn" title="Settings">&#9881;</button>
+</header>
+
+<main>
+  <div class="favwrap showsection" id="favWrap" style="display:none;">
+    <div class="sechead" id="favBar"><h2>Favourites</h2><div class="sortctrl" id="favSortCtrl"></div></div>
+    <div class="favrow" id="favRow"></div>
+  </div>
+
+  <div class="favwrap showsection" id="favWrapD20" style="display:none;">
+    <div class="sechead" id="favBarD20"><h2>Favourites</h2><div class="sortctrl" id="favSortCtrlD20"></div></div>
+    <div class="favrow" id="favRowD20"></div>
+  </div>
+
+  <div class="pagehead" id="mainBar">
+    <div class="toprow">
+      <h1 class="pagetitle" id="pageTitle">All Shows</h1>
+      <span class="shopcount" id="shownCount"></span>
+    </div>
+  </div>
+  <div class="favwrap showsection" id="latestWrap" style="display:none;">
+    <div class="sechead" id="latestBar"><h2>Latest</h2><span class="seccount" id="latestCount"></span></div>
+    <div class="favrow" id="latestRow"></div>
+  </div>
+  <div id="sectionsWrap"></div>
+  <div class="empty" id="emptyMsg" style="display:none;"></div>
+</main>
+<footer class="hint">Show list pulled from watch.dropout.tv/series and matched to Dropout's YouTube channel using your own API key. Episodes open on YouTube in a new tab. Nothing is uploaded anywhere &mdash; everything stays in this browser's local storage.</footer>
+
+<div class="overlay" id="setupOverlay" style="display:none;">
+  <div class="panel">
+    <h2>Connect a YouTube API key</h2>
+    <p>This tool matches Dropout's real show catalog to whatever's actually free on their YouTube channel, using a key tied to your own account so it's never rate-limited by anyone else's quota.</p>
+    <ol>
+      <li>Go to the <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console &rarr; YouTube Data API v3</a> and click <b>Enable</b> (create a project first if asked).</li>
+      <li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Credentials</a> &rarr; <b>Create credentials &rarr; API key</b>.</li>
+      <li>Paste that key below. It's stored only in this browser.</li>
+    </ol>
+    <input type="password" id="apiKeyInput" placeholder="Paste your YouTube API key" autocomplete="new-password" name="dropout-yt-key-1" data-lpignore="true" data-1p-ignore data-bwignore>
+    <div class="btnrow">
+      <button class="btn" id="saveKeyBtn">Save & load shows</button>
+    </div>
+    <p style="margin-top:22px;">Already using this on another saved copy of the file?</p>
+    <div class="btnrow">
+      <button class="btn secondary" id="importDataBtnSetup">Import data from a file&hellip;</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="settingsOverlay" style="display:none;">
+  <div class="panel">
+    <button class="closepanel" data-close="settingsOverlay">&times;</button>
+    <h2>Settings</h2>
+    <p>API key</p>
+    <input type="password" id="apiKeyInput2" placeholder="Paste your YouTube API key" autocomplete="new-password" name="dropout-yt-key-2" data-lpignore="true" data-1p-ignore data-bwignore>
+    <div class="btnrow">
+      <button class="btn" id="saveKeyBtn2">Save key</button>
+    </div>
+    <p style="margin-top:22px;">The YouTube playlist match is cached for 6 hours.</p>
+    <div class="btnrow">
+      <button class="btn secondary" id="forceRefreshBtn">Refresh data now</button>
+    </div>
+    <label class="freeitem" style="margin-top:22px;"><input type="checkbox" id="showHiddenChk"> Show hidden shows <span id="hiddenCount" style="color:var(--muted)"></span></label>
+    <p style="margin-top:22px;">Season to open the first time you click a show</p>
+    <div class="radiorow" id="defaultSeasonRow">
+      <label><input type="radio" name="defaultSeason" value="first" id="defaultSeasonFirst"> First season</label>
+      <label><input type="radio" name="defaultSeason" value="latest" id="defaultSeasonLatest"> Latest season</label>
+    </div>
+    <p style="margin-top:22px;">Move your data (favorites, watched history, API key, seasons left at)</p>
+    <div class="btnrow">
+      <button class="btn secondary" id="exportDataBtn">Export data&hellip;</button>
+      <button class="btn secondary" id="importDataBtn">Import data&hellip;</button>
+    </div>
+    <p style="margin-top:22px;">Danger zone</p>
+    <div class="btnrow">
+      <button class="btn danger" id="clearWatchedBtn">Clear watched history</button>
+      <button class="btn danger" id="clearAllBtn">Clear everything</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="showModalBackdrop" style="display:none;">
+  <div class="modal" id="showModal">
+    <button class="closemodal" data-closemodal="show">&times;</button>
+    <div class="hero" id="heroSection">
+      <div id="heroImgWrap"></div>
+      <div class="grad"></div>
+      <div class="content">
+        <h2 id="heroTitle"></h2>
+        <div class="meta" id="heroMeta"></div>
+        <div class="actions">
+          <button class="btn secondary" id="favBtnModal">&#9734; My List</button>
+          <button class="btn secondary" id="coverBtnModal">Set custom cover</button>
+        </div>
+      </div>
+    </div>
+    <div class="modalbody">
+      <div class="controls">
+        <select class="pill" id="seasonSelect" style="margin-left:0;"></select>
+        <button class="iconbtn2" id="prevSeasonBtn" title="Previous season">&#8249;</button>
+        <button class="iconbtn2" id="openPlaylistBtn" title="Open this season's playlist on YouTube"><svg class="arr" viewBox="0 0 24 24"><path d="M6.5 17.5L17 7M8.5 6.5H17.5V15.5" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="iconbtn2" id="nextSeasonBtn" title="Next season">&#8250;</button>
+        <span class="epcount" id="epCount"></span>
+        <button class="iconbtn2 sortbtn" id="sortDirBtn" title="Oldest first"><svg class="arr" viewBox="0 0 24 24"><path d="M12 20V5M5.5 11.5L12 5l6.5 6.5" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <div class="epgrid" id="epGrid"></div>
+      <div class="loadingrow" id="epLoading" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const CHANNEL_ID = "UCPDXXXJj9nax0fr0Wfc048g"; // Dropout
+  const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+  const IMGIX = "https://vhx.imgix.net/chuncensoredstaging/assets/";
+
+  const LS = {
+    key: "ddb_apikey",
+    watched: "ddb_watched",
+    favs: "ddb_favs",
+    covers: "ddb_covers",
+    lastSeason: "ddb_lastseason",
+    defaultSeason: "ddb_default_season",
+    catOverride: "ddb_catoverride",
+    sortState: "ddb_sortstate",
+    snapshot: "ddb_snapshot",
+    badges: "ddb_badges",
+    plCache: "ddb_cache_playlists",
+    hidden: "ddb_hidden",
+    showHidden: "ddb_showhidden",
+    epCachePrefix: "ddb_cache_ep_"
+  };
+
+  // ---------- Canonical catalog from watch.dropout.tv/series ----------
+  // [slug, display name, seasons count, blurb]
+  const CATALOG = [
+    ["game-changer","Game Changer",8,"The game show where there's a new, surprise premise every episode."],
+    ["dimension-20-toylight","Dimension 20: Toylight",1,"A band of toys rise to defend the enchanted Toylight, the last flicker of a child's imagination."],
+    ["dimension-20-s-adventuring-party","Dimension 20's Adventuring Party",25,"A Dimension 20 talkback show where GM and players discuss the events of the latest episode."],
+    ["crowd-control","Crowd Control",2,"The improvised stand-up show where the audience is the material."],
+    ["smartypants","Smartypants",3,"The greatest thinkers/comedians of our time ask the questions no one else will."],
+    ["toonout","Toonout",1,"Original animated shorts created by independent artists."],
+    ["adventuring-academy","Adventuring Academy",7,"Veteran gamemaster Brennan Lee Mulligan dives deep into role-playing games."],
+    ["parlor-room","Parlor Room",2,"Host Becca Scott gathers her comedian friends for a game night like no other."],
+    ["dimension-20-city-council-of-darkness","Dimension 20: City Council of Darkness",1,"A coterie of misfit vampires establish dominion over a small, quaint town."],
+    ["very-important-people","Very Important People",3,"Comedians are given makeovers and have a fully-improvised interview with host Vic Michaelis."],
+    ["um-actually","Um, Actually",11,"A game show of fandom minutiae one-upmanship."],
+    ["the-don-hertzfeldt-collection","The Don Hertzfeldt Collection",1,"Experience the pioneering animated films of Don Hertzfeldt."],
+    ["don-t-hug-me-i-m-scared","Don't Hug Me I'm Scared",2,"Red Guy, Yellow Guy, and Green Duck learn about everything there is to know."],
+    ["make-some-noise","Make Some Noise",4,"A game show where talented contestants compete to bring to life silly prompts."],
+    ["dimension-20-on-a-bus","Dimension 20: On a Bus",2,"Dragon Master Katie Marovitch leads four veteran game masters on the quest of a lifetime."],
+    ["dimension-20-gladlands","Dimension 20: Gladlands",1,"Welcome to the Gladlands \u2014 the world might have ended, but manners didn't!"],
+    ["gastronauts","Gastronauts",2,"Culinary masterminds compete in challenges created by the most unhinged comedians."],
+    ["dirty-laundry","Dirty Laundry",6,"Host Lily Du gathers four guests to tell secrets, guess who they belong to, and enjoy a few drinks."],
+    ["dimension-20-the-complete-series","Dimension 20",31,"Game Master Brennan Lee Mulligan, joined by comedians and pro gamers, blends comedy with tabletop RPGs."],
+    ["dimension-20-live-complete-collection","Dimension 20 Live",3,"Brennan Lee Mulligan and the Intrepid Heroes play dungeons and dragons in front of a live audience."],
+    ["dimension-20-cloudward-ho","Dimension 20: Cloudward, Ho!",1,"In a world of machine wonder, six explorers set out to search for new lands."],
+    ["fatal-decision","Fatal Decision",1,"Zach Reino plays IT guy Josh Mullens playing Special Ops Agent Jack Maxwell."],
+    ["dimension-20-titan-takedown","Dimension 20: Titan Takedown",1,"Four wrestlers step into the ring and battle the gods for ultimate glory."],
+    ["dimension-20-dungeons-and-drag-queens","Dimension 20: Dungeons and Drag Queens",2,"Four drag queen adventurers death drop into the underworld."],
+    ["nobody-asked","Nobody Asked",1,"Comedians find the smartest answers to the dumbest questions."],
+    ["game-changer-animated","Game Changer Animated",1,"Animators bring to life some of your favorite Game Changer moments."],
+    ["dimension-20-live-time-quangle","Dimension 20 Live: Time Quangle",1,"The Intrepid Heroes traverse through the Dimension 20 multiverse."],
+    ["dimension-20-misfits-and-magic","Dimension 20: Misfits and Magic",3,"GM Aabria Iyengar brings you the tale of four American high schoolers swept into a world of wizards."],
+    ["breaking-news-no-laugh-newsroom","Breaking News: No Laugh Newsroom",7,"Reporters don't know what's about to be on the teleprompter, and every laugh is a point against them."],
+    ["monet-s-slumber-party","Mon\u00e9t's Slumber Party",1,"Host Mon\u00e9t X Change gathers the funniest people you know to kiki and play games."],
+    ["dimension-20-never-stop-blowing-up","Dimension 20: Never Stop Blowing Up",1,"Six nobodies are about to step into the spotlight and reload all the action."],
+    ["thousandaires","Thousandaires",1,"Comedians are given a thousand dollars to spend on their friends and their wildest dreams."],
+    ["dimension-20-fantasy-high-junior-year","Dimension 20: Fantasy High Junior Year",1,"The Bad Kids return for a new year at the Aguefort Adventuring Academy."],
+    ["dimension-20-burrow-s-end","Dimension 20: Burrow's End",1,"A family of stoats must sacrifice everything to survive in a harsh, cruel world."],
+    ["play-it-by-ear","Play It By Ear",2,"A musical improv show where players craft an original musical out of thin air."],
+    ["dimension-20-mentopolis","Dimension 20: Mentopolis",1,"Welcome to Mentopolis \u2014 the city that exists only in your mind."],
+    ["dimension-20-the-ravening-war","Dimension 20: The Ravening War",1,"In an age before A Crown of Candy, the seeds of conflict began to take root."],
+    ["game-changer-battle-royale","Game Changer: Battle Royale",1,"10 contestants, 1 question: Who will survive?"],
+    ["dimension-20-neverafter","Dimension 20: Neverafter",1,"In the world of the Neverafter, not all fairy tales have happy endings."],
+    ["dimension-20-a-court-of-fey-flowers","Dimension 20: A Court of Fey & Flowers",1,"GM Aabria Iyengar and her pack of pixies prepare for the most magical event of the season."],
+    ["dimension-20-fantasy-high","Dimension 20: Fantasy High",3,"It's John Hughes meets D&D with DM Brennan Lee Mulligan and the Aguefort Adventuring Academy."],
+    ["dimension-20-a-crown-of-candy","Dimension 20: A Crown Of Candy",1,"Welcome to the realm of Calorum, a realm made of six food-themed lands."],
+    ["dimension-20-coffin-run","Dimension 20: Coffin Run",1,"GM Jasmine Bhullar weaves a tale as old as many lifetimes, in the gloomy land of Transylvania."],
+    ["total-forgiveness","Total Forgiveness",1,"Crippled with debt, Grant and Ally go head-to-head to prove they'll do ANYTHING to pay off their student loans."],
+    ["dimension-20-audio-only","Dimension 20 [Audio Only]",30,"The audio-only versions of Dimension 20's campaigns."],
+    ["dimension-20-a-starstruck-odyssey","Dimension 20: A Starstruck Odyssey",1,"It's a tough galaxy out there, but somebody's gotta live in it."],
+    ["bad-internet","Bad Internet",1,"A satirical anthology series about the terrifying potential futures of internet technology and culture."],
+    ["dimension-20-shriek-week","Dimension 20: Shriek Week",1,"Four monstrous students at Bram University face off against hormones, mysteries, and the epic party."],
+    ["dimension-20-animated","Dimension 20 Animated",1,"Animators bring to life some of your favorite Dimension 20 moments."],
+    ["dimension-20-the-seven","Dimension 20: The Seven",1,"Seven student adventurers must face their greatest challenge yet: graduation."],
+    ["mice-murder","Dimension 20: Mice & Murder",1,"A dark and stormy night, a deadly mystery, and a bunch of woodland critters."],
+    ["troopers-animated","Troopers: Animated",1,"Rich, Larry, and Dread Lord are back! And slightly more animated!"],
+    ["erotic-clubhouse","Erotic Clubhouse",1,"Jessica Ross and Rekha Shankar create original erotic literature before your very eyes."],
+    ["dimension-20-the-unsleeping-city","Dimension 20: The Unsleeping City",2,"It's DnD meets NYC \u2014 city of dreams, talking rats, pixie mobsters, and Stephen Sondheim."],
+    ["fantasy-high-extra-credit","Fantasy High: Extra Credit",1,"Brennan Lee Mulligan chats with your favorite Fantasy High cast & crew members."],
+    ["dimension-20-escape-from-the-bloodkeep","Dimension 20: Escape From the Bloodkeep",1,"Brennan Lee Mulligan returns to Dimension 20 for an evil side quest."],
+    ["dimension-20-tiny-heist","Dimension 20: Tiny Heist",1,"A world of big crimes... and small people."],
+    ["dimension-20-leviathan","Dimension 20: Leviathan",1,"It's a pirate's life for everyone in this RPG sidequest!"],
+    ["ultramechatron-team-go-1","Ultramechatron Team Go!",1,"The leader, the brainiac, the fighter, & the party guy live together inside a giant robot."],
+    ["total-forgiveness-early-payoff","Total Forgiveness: Early Payoff",1,"More of Ally & Grant cringing for cash in these exclusive bonus scenes."],
+    ["troopers-1","Troopers",1,"A new generation of troopers search for purpose away from Dreadlord Sinister."],
+    ["wtf-101","WTF 101",1,"Afternoon detention with Ms. Foxtrot leads to magical, educational, and extremely gross journeys."],
+    ["what-the-facts-101","What the Facts 101",1,"Jake Young sits down with real experts to discuss the disturbing lessons of WTF 101."],
+    ["cartoon-hell","Cartoon Hell",2,"Drawfee's Caldwell Tanner and Nathan Yaffe must make killer cartoons from viewers' suggestions."],
+    ["paranoia","Paranoia",2,"Ally Beardsley hosts a game show where contestants weed out who among them is secretly stoned."],
+    ["where-in-the-eff-is-sarah-cincinnati","Where in the Eff is Sarah Cincinnati",1,"A Carmen Sandiego send-up about everyone's flakiest friend."],
+    ["gods-of-food","Gods of Food",1,"A spicy mockumentary meeting six of the world's most revolutionary chefs."],
+    ["kingpin-katie","Kingpin Katie",1,"Slacker comedy writer-turned-hapless drug dealer Katie Marovitch makes coke a joke."],
+    ["kingpin-katie-the-web-series","Kingpin Katie: The Web Series",1,"Expanded adventures of everyone's favorite inept drug dealer and would-be dirty cop."],
+    ["see-plum-run","See Plum Run",1,"Mama and Plum invade New England with sights set on student body president."],
+    ["dropout-music","Dropout Music",1,"Songs so catchy, you'll be singing along in no time."],
+    ["the-rank-room","The Rank Room",1,"Katie Marovitch recruits comedians to answer life's important questions."],
+    ["tales-from-the-closet","Tales From the Closet",1,"Ally Beardsley and guests share terrifying tales from before they came out."],
+    ["erotic-book-club","Erotic Book Club",1,"Jessica Ross, Rekha Shankar, and guests review the finest erotic literature."],
+    ["raph-s-hall-of-fame","Raph's Hall of Fame",1,"Guests tell Raphael Chestang the stories of their favorite underrated athletes and teams."],
+    ["tablepop","TablePop",1,"Brian Miller, Eli Yudin, Carolyn Page, and guests turn movies and TV shows into tabletop RPGs."],
+    ["the-collegehumor-podcast","The CollegeHumor Podcast",1,"Behind-the-scenes stories, games, and rejected sketches with the CollegeHumor cast and crew."],
+    ["collegehumor-chaos","CollegeHumor Chaos",1,"The CollegeHumor cast LIVE for games, audience Q&A, and rejected sketches."],
+    ["ch-shorts","CH Shorts",15,"Original sketches, music videos, and pop culture parodies spanning a decade of CollegeHumor."],
+    ["hardly-working","Hardly Working",16,"What really goes on in CollegeHumor offices."],
+    ["the-adventures-of-kim-jong-un","The Adventures of Kim Jong Un",1,"The incredibly accurate, animated documentary about North Korea's Supreme Leader."],
+    ["all-nighters","All-Nighters",1,"The fruits of our ill-conceived annual tradition of guerrilla video making."],
+    ["bearshark-1","BearShark",1,"Two of nature's bloodlustiest predators, one solitary mission: eat this dude."],
+    ["a-message-from-the-ceo","A Message From the CEO",1,"Brennan Lee Mulligan plays a CEO on the worst day of his life."],
+    ["celebrity-slumber-party","Celebrity Slumber Party",1,"Rekha Shankar invites her famous best friends over to play games and tell spooky stories."],
+    ["ch-does-the-purge","CH Does the Purge",1,"Office alliances fall apart when HR mandates a one-night criminal free-for-all."],
+    ["ch-goes-to-hell","CH Goes to Hell",1,"Personally tailored torments, satanic sexpots, and historical monsters."],
+    ["collegehumor-storytime","CollegeHumor Storytime",1,"Wild, weird, and worst experiences brought to life with animation."],
+    ["the-comment-show","The Comment Show",1,"The CollegeHumor cast responds to their favorite YouTube comments and fan questions."],
+    ["dinosaur-office","Dinosaur Office",1,"Relatable average Joes work for a stupid boss in a stupid office, but dinosaurs."],
+    ["dora-the-explorer-and-the-destiny-medallion","Dora the Explorer and the Destiny Medallion",1,"Dora and her badass monkey go all Indiana Jones on some chicos malos."],
+    ["everyday-acting-1","Everyday Acting",1,"Bring the drama. Live the drama. Be the drama."],
+    ["final-destination","Final Destination",1,"A premonition of a breakroom bloodbath sets off a chain of deadly events."],
+    ["full-benefits","Full Benefits",1,"After hours, co-workers Sarah and David secretly dip into each other's corporate ink."],
+    ["badman","Badman",1,"The world's most petulant detective and least competent caped crusader."],
+    ["the-schining","The sCHining",1,"A writer's retreat turns homicidal when just one damn sketch needs to get made."],
+    ["heist-night","Heist Night",1,"Trapp and Grant put together a crack team to pull off the dumbest heist ever."],
+    ["hello-my-name-is","Hello, My Name Is",1,"Pat Cassels interviews a cast of unscripted improv characters played by Josh Ruben."],
+    ["hot-date-the-web-series","Hot Date: The Web Series",1,"Brian Murphy and Emily Axford attempt a lovely, doomed night out."],
+    ["if-google-was-a-guy-1","If Google Was A Guy",1,"He's here to help, but you're not helping."],
+    ["camp","CAMP",1,"Welcome to Camp Wanaykaka, starring Josh Ruben and Thomas Middleditch."],
+    ["inside-the-ch-vault","Inside the CH Vault",1,"Classic compilations and behind-the-scenes intel from the CollegeHumor cast and crew."],
+    ["josh-s-mindhouse","Josh's Mindhouse",1,"Step inside the mind of Josh Ruben."],
+    ["most-insane-vo-booth-ever","Most Insane VO Booth Ever",1,"Josh Ruben gets some of the least helpful notes ever while recording voice-over."],
+    ["phantom-of-the-office","Phantom of the Office",1,"The Phantom (Streeter Seidell) is a freelance corporate loiterer."],
+    ["pov","POV",1,"Just a regular dude's point of view in this crazy world."],
+    ["canon-city-comic-club","Canon City Comic Club",1,"Tristan Cooper and Andrew Bridgman nerd out over iconic comic books."],
+    ["precious-plum","Precious Plum",1,"Precious Plum and her stage monster Mama chase pageant fame in this Honey Boo Boo parody."],
+    ["the-rank-room-the-web-series","The Rank Room: The Web Series",1,"Katie Marovitch hosts a roundtable debate to answer the deepest questions of our time."],
+    ["the-six","The Six",1,"Meet the six people you'll discover in pretty much any phase of your life."],
+    ["soap-box","Soap Box",1,"Hard-hitting, brutally honest opinions about irrelevant matters."],
+    ["sock-or-hat","Sock or Hat?",1,"The wildly mundane game show where celebrities guess if it's a sock or a hat."],
+    ["troopers-the-web-series","Troopers: The Web Series",2,"The intergalactic exploits of Dreadlord Sinister's deadly elite troopers Rich and Larry."],
+    ["ultramechatron-team-go-the-web-series","Ultramechatron Team Go!: The Web Series",1,"Kaiju monsters beware!"],
+    ["um-actually-the-web-series","Um, Actually: The Web Series",1,"The original CollegeHumor sci-fi/fantasy trivia game show web series."],
+    ["very-mary-kate","Very Mary-Kate",2,"The unofficial celebrity biography of Mary-Kate Olsen."],
+    ["yay-or-nay","Yay or Nay",1,"Comedians give final rulings on controversial questions about life and pop culture."],
+    ["tablepop-presents-megadungeon-live","TablePop Presents: MEGADUNGEON LIVE!",1,"An OG D&D game where you're part of the adventure."],
+    ["not-a-yule-log","Not a Yule Log",1,"Festive, oddly satisfying scenes (emphasis on odd) instead of another crackling fire."],
+    ["ch-live","CH Live",1,"Live performances from classic CollegeHumor sketch and stand-up shows."]
+  ].map(r => ({slug:r[0], name:r[1], seasons:r[2], blurb:r[3]}));
+
+  // Curated real cover art (vhx.imgix.net asset ids), by slug
+  const COVERS = {
+    "game-changer":"03ef381c-3292-4cd1-98df-b089ec6c265e.jpg",
+    "dimension-20-the-complete-series":"ab0f241b-4dfa-4882-8cf9-c9d1f4b63b9e.jpg",
+    "dimension-20-fantasy-high":"3c71efd9-a336-436f-9df6-cd3dacb92a93-0046ae35.jpg",
+    "dimension-20-the-unsleeping-city":"b7d64905-9b3c-455c-b7fb-8c20ecb63c61-e0528b30.jpg",
+    "dimension-20-a-crown-of-candy":"61d2e887-52ac-4aec-8185-ce4a1b753950-53a6ff55.jpg",
+    "dimension-20-neverafter":"971de6ef-e633-4d6f-bc6c-df75f5125c83.jpg",
+    "dimension-20-misfits-and-magic":"cd805603-62b0-4d1d-a22d-6d7debb3f1b8.jpg",
+    "um-actually":"4f3fcb32-8800-4482-8fda-eae9f127155c.jpg",
+    "make-some-noise":"b72fa2a2-76dc-4eee-929c-4d372fbe52a0.png",
+    "very-important-people":"5f7157a2-0ec3-4eb0-86f3-c0e0e3398056.jpg",
+    "dirty-laundry":"650fd304-b583-408e-a63f-6529465118f0.jpg",
+    "smartypants":"fd02ab5b-4cf7-497b-91bd-c0517eaac1eb.jpg",
+    "crowd-control":"aeb78db6-d9dc-46d4-b515-e39e8165641f.jpg",
+    "toonout":"d1ab5f72-5ece-4ee2-8800-26b78860cc1a.jpg",
+    "breaking-news-no-laugh-newsroom":"8e6a493b-8709-4354-a488-10e2e30eec10.jpg",
+    "adventuring-academy":"0eb1c8bf-2fc4-49e4-834b-7b04cbba1f01.jpg",
+    "play-it-by-ear":"fea451ec-e052-4175-8d9d-061d399f4c07.jpg",
+    "gastronauts":"b39e39d1-cffa-44eb-a4b3-e1f44a3bf484.jpg",
+    "thousandaires":"f408be7b-7d44-4667-8ffe-cd6cbab0ac9a.jpg",
+    "total-forgiveness":"8139f588-dd19-42c6-9e01-7d28d5bc28a7-fc0b6c2d.jpg",
+    "monet-s-slumber-party":"4e6dc942-0fa7-47b9-9429-947b885a250e.jpg",
+    "parlor-room":"e9584f4c-0275-4973-91fa-7b08b5826e55.jpg",
+    "paranoia":"08bb3954-5caf-49d5-aa72-42740b353689-3a8de890.jpg",
+    "don-t-hug-me-i-m-scared":"f9dbdc45-5d7b-45dc-918e-6aec6a30f8a0.jpg",
+    "dimension-20-s-adventuring-party":"f6dcb2ce-c3db-4825-a830-a6fadd53f5b6.jpg",
+    "troopers-1":"86ac3aa6-3093-4fb3-be0d-b5cef132184a-2ac4a665.jpg",
+    "cartoon-hell":"2b48d07c-07a6-43d6-bd6f-33d23629f43e-cff27d83.jpg",
+    "hardly-working":"3322d21d-4a90-4770-b4b3-64b33418275e.jpg",
+    "very-mary-kate":"4cd7a26b-fe63-405a-aa51-8461086826fb.jpg"
+  };
+
+  function coverUrl(id, w, h){
+    return IMGIX + id + "?auto=format%2Ccompress&fit=crop&w=" + w + "&h=" + h + "&q=75";
+  }
+
+  function getJSON(k, fallback){
+    try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; }
+    catch(e){ return fallback; }
+  }
+  function setJSON(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+
+  let apiKey = localStorage.getItem(LS.key) || "";
+  let watched = new Set(getJSON(LS.watched, []));
+  let favOrder = getJSON(LS.favs, []);
+  let favs = new Set(favOrder);
+  let covers = getJSON(LS.covers, {});
+  let catOverride = getJSON(LS.catOverride, {});
+  let snapshot = getJSON(LS.snapshot, null);
+  let badges = getJSON(LS.badges, {});
+  let lastSeason = getJSON(LS.lastSeason, {});
+  let defaultSeasonPref = localStorage.getItem(LS.defaultSeason) || "latest";
+  let ytPlaylists = [];      // raw playlists from the channel
+  const arrowSvg = (d) => d === "right"
+    ? '<svg class="arr" viewBox="0 0 24 24"><path d="M4 12h16M13 5.5l6.5 6.5-6.5 6.5" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : d === "up"
+    ? '<svg class="arr" viewBox="0 0 24 24"><path d="M12 20V5M5.5 11.5L12 5l6.5 6.5" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    : '<svg class="arr" viewBox="0 0 24 24"><path d="M12 4v15M5.5 12.5L12 19l6.5-6.5" stroke="currentColor" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  let hiddenSet = new Set(getJSON("ddb_hidden", []));
+  let showHidden = localStorage.getItem("ddb_showhidden") === "1";
+  let matchIndex = {};       // slug -> [playlist,...]
+  let currentTab = "browse";
+  let currentShow = null;
+  let currentPlaylistId = null;
+  let currentPlaylists = [];
+
+  // ---------- YouTube API ----------
+  async function ytFetch(endpoint, params){
+    params.key = apiKey;
+    const url = "https://www.googleapis.com/youtube/v3/" + endpoint + "?" +
+      Object.entries(params).map(([k,v]) => k + "=" + encodeURIComponent(v)).join("&");
+    const res = await fetch(url);
+    if(!res.ok){
+      const body = await res.json().catch(()=>({}));
+      throw new Error((body.error && body.error.message) || ("YouTube API error " + res.status));
+    }
+    return res.json();
+  }
+  async function fetchAllPages(endpoint, params){
+    let items = [];
+    let pageToken = "";
+    do{
+      const p = Object.assign({}, params);
+      if(pageToken) p.pageToken = pageToken;
+      const data = await ytFetch(endpoint, p);
+      items = items.concat(data.items || []);
+      pageToken = data.nextPageToken || "";
+    } while(pageToken);
+    return items;
+  }
+  function parseISODuration(iso){
+    if(!iso) return "";
+    const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if(!m) return "";
+    const h = parseInt(m[1]||0), mi = parseInt(m[2]||0), s = parseInt(m[3]||0);
+    const pad = n => String(n).padStart(2,"0");
+    return h > 0 ? (h + ":" + pad(mi) + ":" + pad(s)) : (mi + ":" + pad(s));
+  }
+  function bestThumb(thumbnails){
+    if(!thumbnails) return "";
+    return (thumbnails.maxres || thumbnails.standard || thumbnails.high || thumbnails.medium || thumbnails.default || {}).url || "";
+  }
+
+  // ---------- Matching canonical shows to YouTube playlists ----------
+  function normalize(s){
+    return s.toLowerCase().replace(/[\u2018\u2019]/g,"'").replace(/[^a-z0-9]+/g," ").trim();
+  }
+  function coreName(s){
+    let n = normalize(s);
+    n = n.replace(/^dimension 20 s /,"").replace(/^dimension 20 /,"").replace(/^d20 /,"");
+    return n.trim();
+  }
+  function stripSeasonNoise(title){
+    let t = title;
+    t = t.replace(/[\(\[]?\s*(full\s*episodes?|highlights?|bloopers?|clips?|compilation)\s*[\)\]]?/ig, "");
+    t = t.replace(/[-\u2013:|]\s*season\s*\d+.*$/i, "");
+    t = t.replace(/\bseason\s*\d+\b.*$/i, "");
+    return t;
+  }
+  function extractSeason(title){
+    const m = title.match(/season\s*(\d+)/i);
+    return m ? parseInt(m[1]) : null;
+  }
+  function wordBoundaryContains(haystack, needle){
+    if(!needle || !haystack) return false;
+    if(haystack === needle) return true;
+    const esc = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp("(^|\\s)" + esc + "(\\s|$)").test(haystack);
+  }
+
+  // Known-correct playlist IDs for shows whose YouTube titles drift across
+  // seasons (subtitle added/dropped, punctuation changes, etc.) and so can't
+  // always be matched reliably by the fuzzy title logic below. Sourced from
+  // github.com/soitchu/unofficial-dropout-youtube-browser's hand-verified
+  // show/season/playlist mapping, keyed here by our own catalog slug. These
+  // are merged in as a safety net, not a replacement, so a newer season the
+  // fuzzy matcher finds on its own (and that isn't in this list yet) is
+  // never dropped.
+  const KNOWN_PLAYLIST_IDS = {
+    "dimension-20-s-adventuring-party": ["PLuKg-WhduhkkTuqhyfXtxDvhP5fpoMlpr","PLuKg-Whduhkn7AS_qAK8zLJjPle8eisYQ","PLuKg-WhduhkniBV9-eUqhTgrxT3ZOcy8Y","PLuKg-WhduhkmKyqt7OBFVqzo9yCjaSwQQ","PLuKg-WhduhknKZtgyAF6xTiH6IFTkPpYm","PLuKg-WhduhkkItLc-ZAw5Q8MUQBIjNAJB","PLuKg-Whduhkkg9peKDG4xdu3V_fRzPDXk","PLuKg-WhduhklZ-IjfLy3GoWLwhN4tHbDi","PLuKg-Whduhkm2OJmJyVjhN1XazXmQ-57t","PLuKg-WhduhkmzkStnto_NdUEY74vTFSMn","PLuKg-WhduhknXAHImxFyNuC1fI8vLUldr","PLuKg-Whduhknp9SltBDLN9L4eotzF_Xp5","PLuKg-Whduhkm3PE_UYCALGzcoFXfhW5Mr","PLuKg-WhduhkmUT8nM76YgzTVcWnZuZYGf","PLuKg-Whduhkn2Yi737GOCfGNgfWkT-TPG","PLuKg-Whduhkkm0-a61TuhKhR_JKjErrec","PLuKg-WhduhkmMjwKQnCdtGbAKPi6Pi_Yq","PLuKg-Whduhkkvt0qNwUm9A11kFcEm0t7Y","PLuKg-WhduhklKgvZ1t-nTkXdHumj8VL55","PLuKg-WhduhknDWzG7SWPRxTEpr7CFuvlv","PLuKg-Whduhkmu--9oq0J48LbSY7xuM8aM"],
+    "dimension-20-cloudward-ho": ["PLuKg-WhduhkkvZZ9Cdga9MqZm--UfkMg-"],
+    "dimension-20-fantasy-high": ["PLuKg-WhduhklSBUjoUJ0drkCEIHI6nXyf","PLuKg-Whduhkk8HjHp26tc620wMYTf6gHQ","PLuKg-Whduhklj1Dpe8NN7__nLxGoaOUMl"],
+    "parlor-room": ["PLuKg-WhduhknuLz-3nI5cSx_A2-Ce4pB8"],
+    "adventuring-academy": ["PLObfuAmZm9pDMHtb0drlb8b6hC3FG_A5r","PLuKg-WhduhknE1uHHwWAg0whVfVsJZCYt","PLuKg-Whduhkk-5m622-ByVbvJnri0uUoP","PLuKg-WhduhkkAtVMOqtMG_zPuOB1jA6sG","PLuKg-Whduhkm-4sXzbkm8zMCCec4CRFyS","PLuKg-Whduhkn2ZV5fnWsPl-hpBnCPzIPm"],
+    "game-changer": ["PLuKg-Whduhkkkv87Vu74CJqMm6IS2F8q8","PLuKg-WhduhkkbSIBhz0cPZ3uR3Vk6g10s","PLuKg-WhduhklqUBoGNH1UfiwHoy69xnk9","PLuKg-WhduhkksoVNFT5K3twKCmVXwJy8I","PLuKg-Whduhkmy3IhF2hkc8HhKYRhMUWmR","PLuKg-WhduhkmcoMuGaUDVZwcAsU1ZHAQ7","PLuKg-Whduhkkpa6gsy53Y0W-84IC0vi_k"],
+    "dimension-20-titan-takedown": ["PLuKg-WhduhkkZC19a9uJ50J966ThF-5xL"],
+    "smartypants": ["PLuKg-WhduhknsG4-xyAjtuuFcKo0_VXnd","PLuKg-Whduhkllm72_hQUMknAh2vitiQpI"],
+    "um-actually": ["PLuKg-WhduhkkSIZioiqPV8X2WpEMWTUAu","PLuKg-WhduhknUgsScU_A4WlCj1mqX1kjK","PLuKg-WhduhknYn2ch9X1N5tWIbkGQxSKQ","PLuKg-WhduhkljPQ8MwEXwn1nktpyazoEb","PLuKg-WhduhknQtY4xCGQ4LOLG30XwmS92","PLuKg-Whduhknm1akBLE-uqCWjK4H_eaka","PLuKg-WhduhkmPxWnsJkRoSKmaE4MeZaIj","PLuKg-WhduhkmmLlf_Aa-aoPhweuvEmhtu","PLuKg-Whduhklnu62UVFWs9qESyuy8UPid","PLuKg-WhduhklMYOXayMQH8R_9M498Dpqi"],
+    "dimension-20-dungeons-and-drag-queens": ["PLuKg-WhduhknUrmt6iHEjL0AoZ42tylCn","PLuKg-WhduhknDmpFfFNRsW-H4chcPTDBF"],
+    "game-changer-animated": ["PLuKg-WhduhkkNv9-C-He_nBHwdvKtrlqI"],
+    "nobody-asked": ["PLuKg-WhduhklF0C0qfVvWo96uPBnty1QD"],
+    "very-important-people": ["PLuKg-Whduhkn3T37q60MjNGpKU42IVEA4","PLuKg-WhduhklS4Jxg4lWUsH1fRWEEK00D"],
+    "gastronauts": ["PLuKg-WhduhklpZAuqRbViEAFOM9Fh0KAg"],
+    "dimension-20-misfits-and-magic": ["PLuKg-Whduhkk7a9GbnMsrO6wbT1iP4cAG","PLuKg-WhduhkkHWhaVwAAN1wHxSCbs6nA9"],
+    "dirty-laundry": ["PLuKg-Whduhkl5hzfPPYPM5utyJb-LQiTV","PLuKg-WhduhkkAfhAOfeL2vXxyO00TezyT","PLuKg-WhduhklOTvqd180AY6BBjEqj1pWj","PLuKg-WhduhkmQXMRcr84pUS33BnPR4RZk"],
+    "monet-s-slumber-party": ["PLuKg-WhduhknB1R2EZEidC3BXmGdpiK_f"],
+    "dimension-20-never-stop-blowing-up": ["PLuKg-Whduhklvmcd5GMK0Br0sc1SvKSvp"],
+    "make-some-noise": ["PLuKg-WhduhknZ0xFBcAAeIDB1nBplFoH3","PLuKg-WhduhklRTc-ntZJiD9JXgdxEMKVb","PLuKg-WhduhknEZgcf7ZGt1ZZSAeR8ZBcm"],
+    "thousandaires": ["PLuKg-Whduhkm-ITGE0wM0AZDigiNfzPxB"],
+    "breaking-news-no-laugh-newsroom": ["PLuKg-WhduhknGP5ykvcU-40Pxp-aPQZho","PLuKg-Whduhkm08fPmGlVgQwSqjEgMiIy9","PLuKg-WhduhknELOB0cu5a9Qhj458k5Ifr","PLuKg-WhduhkmITev1zRfo6NwKewjlx3Ld","PLuKg-Whduhkk9nOUa_KYIdyrIrCTnTAxC","PLuKg-WhduhknKu_joo06Kw4E3_amMPkAZ","PLuKg-WhduhknAiRoUvzfAi02Av0QcL_mW"],
+    "dimension-20-burrow-s-end": ["PLuKg-WhduhklykygrHBGZTyproUlKZ4j6"],
+    "dimension-20-mentopolis": ["PLuKg-WhduhkmYq51iPCo79Qn4PvGlCIp1"],
+    "play-it-by-ear": ["PLuKg-WhduhknVQK2OQbQbzpWLr91PjJTy","PLuKg-WhduhkmmhG5qTJa0hh5hV37fmVxX"],
+    "dimension-20-the-ravening-war": ["PLuKg-Whduhkl1WatjPjS7zhKVVR38LMjw"],
+    "game-changer-battle-royale": ["PLuKg-WhduhkleKS-5R7ODgMXrkOTjTUXP"],
+    "dimension-20-neverafter": ["PLuKg-WhduhkkcOL5Cny-kg_2NJKB4JKns"],
+    "dimension-20-a-court-of-fey-flowers": ["PLuKg-Whduhklm7ROsq8zkL5CT4GIDmui5"],
+    "dimension-20-coffin-run": ["PLuKg-WhduhknVZCRUgvLIXs9DZ_QaimVW"],
+    "dimension-20-a-starstruck-odyssey": ["PLuKg-Whduhkn1YLm9lvP_7lPRmRknpIyA"],
+    "dimension-20-shriek-week": ["PLuKg-WhduhkleFX_A08r5HlnD89iDA_Ql"],
+    "bad-internet": ["PLuKg-WhduhknHL8abQfI_RNrft9nWYiN8"],
+    "dimension-20-the-seven": ["PLuKg-Whduhkn30DSLn_KNduyhJd93SOSR"],
+    "dimension-20-animated": ["PLuKg-Whduhkna7JRsEJV6SlwgIKymmkmf"],
+    "mice-murder": ["PLuKg-WhduhkkwCE70nH37McsKsca6Yx50"],
+    "dimension-20-the-unsleeping-city": ["PLuKg-WhduhkmJU5myEzM82EXNna99ykgC"],
+    "dimension-20-leviathan": ["PLuKg-Whduhkk2ufJLMauJ71NsujHqMxVz"],
+    "erotic-clubhouse": ["PLuKg-WhduhkncxV-1YWakzsP4rFxwzvOG"],
+    "dimension-20-a-crown-of-candy": ["PLuKg-Whduhkm7msDryVXT0Ht8GBABrrF-"],
+    "not-a-yule-log": ["PLuKg-WhduhklSIn0hkOsp8TDsviZxjvnO"],
+    "where-in-the-eff-is-sarah-cincinnati": ["PLuKg-Whduhkl1NYlKbWhLPvuaU9FridwH"],
+    "dimension-20-tiny-heist": ["PLuKg-WhduhkntruCZvpkgMkFkpGGXCTom"],
+    "paranoia": ["PLuKg-Whduhkn-DkG-jomIzjeRZd-BuiaU","PLuKg-WhduhknEuzDs2lZrwcdniGCBowhd"],
+    "tablepop-presents-megadungeon-live": ["PLuKg-WhduhklZ_HeXQgeUmJxN_6M13MgB"],
+    "ultramechatron-team-go-1": ["PLuKg-Whduhkl_dKN74mlS6kKdbZ-b1PAu"],
+    "collegehumor-chaos": ["PLuKg-WhduhkkD-jI4gQldXSFvhAP8llx3"],
+    "the-rank-room": ["PLuKg-WhduhkkYj62kGjXsxOVMmDits878"],
+    "troopers-1": ["PLuKg-Whduhkn7yfHlEl3pSoHbeEty_aN9"],
+    "see-plum-run": ["PLuKg-Whduhkm8DqId7UBVDp5Ymz4mRI1S"],
+    "cartoon-hell": ["PLuKg-WhduhkkA6ZOJfIwryj7UwSCioK5m","PLuKg-Whduhkk4l1oe53YzAqsXWDybDj6B"],
+    "dimension-20-escape-from-the-bloodkeep": ["PLuKg-WhduhkmhsvbPmu7MCWzKCFfeRrve"],
+    "kingpin-katie-the-web-series": ["PLuKg-Whduhkm4aFivsfHb4fqy6o6r__oN"],
+    "kingpin-katie": ["PLuKg-WhduhklaH6-pPlNHnZLl43abt5hx"],
+    "gods-of-food": ["PLuKg-WhduhklqxQG3wXn8RucFV2KJJUrB"],
+    "total-forgiveness": ["PLuKg-Whduhkl9NqmqYv9LzcillePncbjI"],
+    "wtf-101": ["PLuKg-WhduhklWTVcszGQgm3UhpeS_wdbf"]
+  };
+
+  const FREE_RE = /free\s+episodes?/i;
+  function matchPlaylists(show, list){
+    const targetFull = normalize(show.name);
+    const targetCore = coreName(show.name);
+    return list.filter(p => {
+      const stripped = stripSeasonNoise((p.snippet.title || "").replace(/\(?\s*free\s+episodes?\s*\)?/i, ""));
+      const full = normalize(stripped);
+      const core = coreName(stripped);
+      if(full === targetFull) return true;
+      if(targetCore && core === targetCore) return true;
+      if(targetCore && core && targetCore.length >= 8 && core.length >= 8){
+        if(wordBoundaryContains(core, targetCore) || wordBoundaryContains(targetCore, core)) return true;
+      }
+      return false;
+    });
+  }
+  function buildMatchIndex(allPlaylists){
+    for(let i = CATALOG.length - 1; i >= 0; i--){ if(CATALOG[i].dynamic) CATALOG.splice(i, 1); }
+    // "(Free Episodes)" playlists are partial duplicates; ignored unless the show has nothing else and the user chose to keep it.
+    const freeLists = allPlaylists.filter(p => FREE_RE.test(p.snippet.title || ""));
+    const playlists = allPlaylists.filter(p => !FREE_RE.test(p.snippet.title || ""));
+    const idx = {};
+    const byId = {};
+    playlists.forEach(p => { byId[p.id] = p; });
+    const used = new Set();
+    CATALOG.forEach(show => {
+      const matchMap = new Map();
+      matchPlaylists(show, playlists).forEach(p => matchMap.set(p.id, p));
+      (KNOWN_PLAYLIST_IDS[show.slug] || []).forEach(plId => { const p = byId[plId]; if(p) matchMap.set(p.id, p); });
+      const finalMatches = Array.from(matchMap.values());
+      if(finalMatches.length){ idx[show.slug] = finalMatches; finalMatches.forEach(p => used.add(p.id)); }
+    });
+    // New shows not in the built-in catalog: group leftover "(Full Episodes)" playlists by show name
+    const groups = new Map();
+    playlists.forEach(p => {
+      const t = p.snippet.title || "";
+      if(used.has(p.id) || !/\(\s*full\s+episodes?\s*\)/i.test(t) || /^\s*latest\b/i.test(t)) return;
+      const name = t.replace(/\([^)]*\)/g, " ").replace(/[\s\-–:|]*season\s*\d+\s*$/i, "").replace(/\s+/g, " ").trim();
+      if(!name) return;
+      const key = normalize(name);
+      if(!groups.has(key)) groups.set(key, { name, list: [] });
+      groups.get(key).list.push(p);
+    });
+    groups.forEach(g => {
+      const slug = "yt-" + g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const show = { slug, name: g.name, seasons: g.list.length, blurb: "", dynamic: true };
+      CATALOG.push(show);
+      idx[slug] = g.list;
+      g.list.forEach(p => used.add(p.id));
+    });
+    // "Only on YouTube": every remaining playlist (free ones included), grouped into seasons by similar name.
+    const matchedAll = Object.keys(idx);
+    const dupFree = (p) => FREE_RE.test(p.snippet.title || "") && CATALOG.some(sh => !sh.onlyYt && idx[sh.slug] && matchPlaylists(sh, [p]).length);
+    const oy = new Map();
+    allPlaylists.forEach(p => {
+      if(used.has(p.id) || dupFree(p)) return;
+      const t = p.snippet.title || "";
+      const name = t.replace(/\([^)]*\)/g, " ").replace(/[\[\]]/g, " ")
+        .replace(/[\s\-\u2013:|,]*\b(season|series|part|vol(?:ume)?|pt|s)\.?\s*\d+\b/ig, " ")
+        .replace(/\b(19|20)\d\d\b/g, " ").replace(/#\s*\d+/g, " ").replace(/\s+\d+\s*$/, " ")
+        .replace(/\s+/g, " ").replace(/[\s\-\u2013:|,]+$/, "").trim() || t;
+      const key = normalize(name);
+      if(!oy.has(key)) oy.set(key, { name, list: [] });
+      oy.get(key).list.push(p);
+    });
+    oy.forEach(g => {
+      const slug = "oy-" + g.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if(idx[slug]) return;
+      CATALOG.push({ slug, name: g.name, seasons: g.list.length, blurb: "", dynamic: true, onlyYt: true });
+      idx[slug] = g.list;
+    });
+    return idx;
+  }
+
+  // ---------- Data loading ----------
+  function currentSnapshot(){
+    const s = {};
+    Object.keys(matchIndex).forEach(slug => {
+      if(slug.startsWith("oy-")) return;
+      const o = {};
+      matchIndex[slug].forEach(p => { o[p.id] = (p.contentDetails && p.contentDetails.itemCount) || 0; });
+      s[slug] = o;
+    });
+    return s;
+  }
+  function detectChanges(){
+    const now = currentSnapshot();
+    if(snapshot){
+      Object.keys(now).forEach(slug => {
+        const prev = snapshot[slug];
+        if(!prev){ const sh = CATALOG.find(x => x.slug === slug); badges[slug] = (sh && sh.dynamic) ? "show" : "se"; return; }
+        let newSeason = false, newEp = false;
+        Object.keys(now[slug]).forEach(id => {
+          if(!(id in prev)) newSeason = true;
+          else if(now[slug][id] > prev[id]) newEp = true;
+        });
+        if(newSeason) badges[slug] = "se";
+        else if(newEp && badges[slug] !== "se") badges[slug] = "ep";
+      });
+      setJSON(LS.badges, badges);
+    }
+    snapshot = now;
+    setJSON(LS.snapshot, now);
+  }
+
+  async function loadPlaylists(force){
+    const cached = getJSON(LS.plCache, null);
+    if(!force && cached && (Date.now() - cached.ts < CACHE_TTL)){
+      ytPlaylists = cached.data;
+      matchIndex = buildMatchIndex(ytPlaylists);
+      renderGrid();
+      return;
+    }
+    showEmpty("Matching Dropout's catalog to YouTube\u2026");
+    try{
+      const items = await fetchAllPages("playlists", {
+        part: "snippet,contentDetails",
+        channelId: CHANNEL_ID,
+        maxResults: 50
+      });
+      setJSON(LS.plCache, { ts: Date.now(), data: items });
+      ytPlaylists = items;
+      matchIndex = buildMatchIndex(ytPlaylists);
+      detectChanges();
+      renderGrid();
+    }catch(e){
+      showEmpty("Couldn't reach YouTube: " + e.message);
+    }
+  }
+
+  async function loadEpisodes(playlistId, force){
+    const cacheKey = LS.epCachePrefix + playlistId;
+    const cached = getJSON(cacheKey, null);
+    if(!force && cached && (Date.now() - cached.ts < CACHE_TTL)){
+      return cached.data;
+    }
+    const items = await fetchAllPages("playlistItems", {
+      part: "snippet,contentDetails",
+      playlistId: playlistId,
+      maxResults: 50
+    });
+    const videoIds = items.map(i => i.contentDetails.videoId).filter(Boolean);
+    const durations = {};
+    for(let i=0; i<videoIds.length; i+=50){
+      const chunk = videoIds.slice(i, i+50);
+      const vdata = await ytFetch("videos", { part:"contentDetails", id: chunk.join(",") });
+      (vdata.items||[]).forEach(v => { durations[v.id] = v.contentDetails.duration; });
+    }
+    const episodes = items.map((it,idx) => ({
+      videoId: it.contentDetails.videoId,
+      title: it.snippet.title,
+      thumb: bestThumb(it.snippet.thumbnails),
+      position: it.snippet.position != null ? it.snippet.position : idx,
+      duration: parseISODuration(durations[it.contentDetails.videoId])
+    })).filter(e => e.title !== "Private video" && e.title !== "Deleted video");
+    setJSON(cacheKey, { ts: Date.now(), data: episodes });
+    return episodes;
+  }
+
+  // ---------- Rendering: sectioned grid ----------
+  const sectionsWrap = document.getElementById("sectionsWrap");
+  const emptyMsg = document.getElementById("emptyMsg");
+  const pageTitle = document.getElementById("pageTitle");
+  const shownCount = document.getElementById("shownCount");
+  const favWrap = document.getElementById("favWrap");
+  const favRow = document.getElementById("favRow");
+  const favWrapD20 = document.getElementById("favWrapD20");
+  const favRowD20 = document.getElementById("favRowD20");
+  const latestWrap = document.getElementById("latestWrap");
+  const latestRow = document.getElementById("latestRow");
+
+  const SORT_MODES = [
+    { key:"alpha",   label:"Alphabetical" },
+    { key:"seasons", label:"Season Count" },
+    { key:"release", label:"Release Date" },
+    { key:"latest",  label:"Latest Season" }
+  ];
+  const DEFAULT_SORT_STATE = {
+    browse: { mode:"alpha", dir:"asc" },
+    mylist: { mode:"alpha", dir:"asc" },
+    mylistD20: { mode:"alpha", dir:"asc" },
+    d20: { mode:"alpha", dir:"asc" },
+    favrow: { dir:"desc" }, // desc = most-recently-favourited first
+    favrowD20: { dir:"desc" }
+  };
+  const savedSortState = getJSON(LS.sortState, {});
+  const sortState = {};
+  Object.keys(DEFAULT_SORT_STATE).forEach(k => {
+    sortState[k] = Object.assign({}, DEFAULT_SORT_STATE[k], savedSortState[k] || {});
+  });
+  function saveSortState(){ setJSON(LS.sortState, sortState); }
+
+  function dirLabel(mode, dir){
+    if(mode === "alpha") return dir === "asc" ? "A\u2013Z" : "Z\u2013A";
+    if(mode === "seasons") return dir === "asc" ? "Fewest first" : "Most first";
+    if(mode === "release") return dir === "asc" ? "Oldest first" : "Newest first";
+    if(mode === "latest") return dir === "asc" ? "Oldest first" : "Newest first";
+    return "";
+  }
+
+  function buildSortControl(containerEl, stateKey, onChange){
+    containerEl.innerHTML = "";
+    const state = sortState[stateKey];
+    const pillBtn = document.createElement("button");
+    pillBtn.className = "sortpill";
+    const dirBtn = document.createElement("button");
+    dirBtn.className = "sortdir";
+
+    function refresh(){
+      const modeObj = SORT_MODES.find(m => m.key === state.mode);
+      pillBtn.textContent = modeObj.label;
+      dirBtn.innerHTML = arrowSvg(state.dir === "asc" ? "up" : "down");
+      dirBtn.title = dirLabel(state.mode, state.dir);
+    }
+    pillBtn.addEventListener("click", () => {
+      const idx = SORT_MODES.findIndex(m => m.key === state.mode);
+      state.mode = SORT_MODES[(idx+1) % SORT_MODES.length].key;
+      refresh();
+      saveSortState();
+      onChange();
+    });
+    dirBtn.addEventListener("click", () => {
+      state.dir = state.dir === "asc" ? "desc" : "asc";
+      refresh();
+      saveSortState();
+      onChange();
+    });
+    refresh();
+    containerEl.appendChild(pillBtn);
+    containerEl.appendChild(dirBtn);
+  }
+
+  function buildFavDirControl(containerEl, stateKey, onChange){
+    containerEl.innerHTML = "";
+    const state = sortState[stateKey];
+    const dirBtn = document.createElement("button");
+    dirBtn.className = "sortdir";
+    function refresh(){
+      dirBtn.innerHTML = arrowSvg(state.dir === "desc" ? "down" : "up");
+      dirBtn.title = state.dir === "desc" ? "Most recently favourited first" : "First favourited first";
+    }
+    dirBtn.addEventListener("click", () => {
+      state.dir = state.dir === "desc" ? "asc" : "desc";
+      refresh();
+      saveSortState();
+      onChange();
+    });
+    refresh();
+    containerEl.appendChild(dirBtn);
+  }
+
+  function getReleaseDate(show){
+    const m = matchIndex[show.slug];
+    if(!m || !m.length) return null;
+    let min = null;
+    m.forEach(p => {
+      const raw = p.snippet && p.snippet.publishedAt;
+      const d = raw ? new Date(raw).getTime() : null;
+      if(d && (min === null || d < min)) min = d;
+    });
+    return min;
+  }
+  function getLatestDate(show){
+    const m = matchIndex[show.slug];
+    if(!m || !m.length) return null;
+    let max = null;
+    m.forEach(p => {
+      const raw = p.snippet && p.snippet.publishedAt;
+      const d = raw ? new Date(raw).getTime() : null;
+      if(d && (max === null || d > max)) max = d;
+    });
+    return max;
+  }
+
+  function sortShowsBy(list, stateKey){
+    const state = sortState[stateKey];
+    const mul = state.dir === "desc" ? -1 : 1;
+    const arr = list.slice();
+    arr.sort((a,b) => {
+      if(state.mode === "alpha") return mul * a.name.localeCompare(b.name);
+      if(state.mode === "seasons") return (mul * (a.seasons - b.seasons)) || a.name.localeCompare(b.name);
+      if(state.mode === "release" || state.mode === "latest"){
+        const getter = state.mode === "release" ? getReleaseDate : getLatestDate;
+        const da = getter(a), db = getter(b);
+        if(da === null && db === null) return a.name.localeCompare(b.name);
+        if(da === null) return 1;
+        if(db === null) return -1;
+        return mul * (da - db);
+      }
+      return 0;
+    });
+    return arr;
+  }
+
+  function showEmpty(msg){
+    sectionsWrap.innerHTML = "";
+    emptyMsg.style.display = "block";
+    emptyMsg.textContent = msg;
+    shownCount.textContent = "";
+  }
+
+  function isDimension20(show){
+    return /^dimension 20\b/.test(normalize(show.name)) || show.slug === "mice-murder";
+  }
+  function isAvailable(show){
+    const m = matchIndex[show.slug];
+    return !!(m && m.length);
+  }
+  function effectiveCategory(show){
+    if(isDimension20(show)) return "d20";
+    if(!isAvailable(show)) return "unavailable";
+    const o = catOverride[show.slug];
+    if(o === "top" || o === "other") return o;
+    return show.seasons > 1 ? "top" : "other";
+  }
+  function setCategoryOverride(show, cat){
+    catOverride[show.slug] = cat;
+    setJSON(LS.catOverride, catOverride);
+  }
+
+  function cardImage(show, w, h){
+    if(covers[show.slug]) return `<img src="${covers[show.slug]}" alt="">`;
+    if(COVERS[show.slug]) return `<img src="${coverUrl(COVERS[show.slug], w, h)}" alt="">`;
+    const matches = matchIndex[show.slug];
+    if(matches && matches.length){
+      const t = bestThumb(matches[0].snippet.thumbnails);
+      if(t) return `<img src="${t}" alt="">`;
+    }
+    return `<div class="placeholder">${show.name}</div>`;
+  }
+
+  function toggleFavorite(slug){
+    if(favs.has(slug)){
+      favs.delete(slug);
+      favOrder = favOrder.filter(s => s !== slug);
+    }else{
+      favs.add(slug);
+      favOrder.push(slug);
+    }
+    setJSON(LS.favs, favOrder);
+  }
+
+  // ---------- Context menu ----------
+  let ctxMenuEl = null;
+  function closeContextMenu(){
+    if(ctxMenuEl){ ctxMenuEl.remove(); ctxMenuEl = null; }
+    document.removeEventListener("click", closeContextMenu);
+    document.removeEventListener("contextmenu", closeContextMenu);
+    document.removeEventListener("keydown", ctxMenuEscHandler);
+  }
+  function ctxMenuEscHandler(e){ if(e.key === "Escape") closeContextMenu(); }
+  function openContextMenu(x, y, items){
+    closeContextMenu();
+    const menu = document.createElement("div");
+    menu.className = "ctxmenu";
+    items.forEach(item => {
+      const btn = document.createElement("button");
+      btn.textContent = item.label;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeContextMenu();
+        item.onClick();
+      });
+      menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const rect = menu.getBoundingClientRect();
+    let left = x, top = y;
+    if(left + rect.width > vw - 8) left = vw - rect.width - 8;
+    if(top + rect.height > vh - 8) top = vh - rect.height - 8;
+    menu.style.left = Math.max(8, left) + "px";
+    menu.style.top = Math.max(8, top) + "px";
+    ctxMenuEl = menu;
+    setTimeout(() => {
+      document.addEventListener("click", closeContextMenu);
+      document.addEventListener("contextmenu", closeContextMenu);
+      document.addEventListener("keydown", ctxMenuEscHandler);
+    }, 0);
+  }
+  function showCardContextMenu(e, show){
+    e.preventDefault();
+    e.stopPropagation();
+    const items = [];
+    items.push({
+      label: "Set custom cover\u2026",
+      onClick: () => {
+        const url = prompt("Paste an image URL to use as this show's cover:", covers[show.slug] || "");
+        if(url !== null){
+          if(url.trim() === "") delete covers[show.slug]; else covers[show.slug] = url.trim();
+          setJSON(LS.covers, covers);
+          renderGrid();
+        }
+      }
+    });
+    const cat = effectiveCategory(show);
+    if(cat === "top" || cat === "other"){
+      const target = cat === "top" ? "other" : "top";
+      items.push({
+        label: target === "top" ? "Move to Top Shows" : "Move to Other Shows",
+        onClick: () => { setCategoryOverride(show, target); renderGrid(); }
+      });
+    }
+    const isHid = hiddenSet.has(show.slug);
+    items.push({
+      label: isHid ? "Unhide show" : "Hide show",
+      onClick: () => {
+        if(isHid) hiddenSet.delete(show.slug); else hiddenSet.add(show.slug);
+        setJSON(LS.hidden, Array.from(hiddenSet));
+        renderGrid();
+      }
+    });
+    openContextMenu(e.clientX, e.clientY, items);
+  }
+
+  function ribbonFor(show){
+    return badges[show.slug];
+  }
+  function buildCard(show){
+    const available = isAvailable(show);
+    const card = document.createElement("div");
+    card.className = "showcard" + (available ? "" : " unavailable");
+    card.innerHTML = `
+      ${cardImage(show, 480, 270)}
+      <div class="grad"></div>
+      ${available ? "" : `<div class="badge">Not on YouTube</div>`}
+      ${available && ribbonFor(show) ? `<div class="ribbon">${({se:"New Season",ep:"New Episode",show:"New Show"})[ribbonFor(show)]}</div>` : ""}
+      <button class="star ${favs.has(show.slug)?'active':''}" title="Add to My List">${favs.has(show.slug)?'\u2605':'\u2606'}</button>
+      <div class="label">
+        <div class="t">${show.name}</div>
+        <div class="s">${show.seasons > 1 ? show.seasons + " seasons" : "1 season"}</div>
+      </div>`;
+    card.querySelector(".star").addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleFavorite(show.slug);
+      renderGrid();
+    });
+    card.addEventListener("contextmenu", (e) => showCardContextMenu(e, show));
+    if(available){
+      card.addEventListener("click", () => openShow(show));
+    }else{
+      card.addEventListener("click", () => window.open("https://watch.dropout.tv/" + show.slug, "_blank"));
+    }
+    return card;
+  }
+
+  function buildSection(title, list, sortKey, idSuffix){
+    if(list.length === 0) return null;
+    const section = document.createElement("div");
+    section.className = "showsection";
+    const ctrlId = "sortctrl-" + idSuffix;
+    section.innerHTML = `<div class="sechead"><h2>${title}</h2><span class="seccount">${list.length} show${list.length===1?"":"s"}</span><div class="sortctrl" id="${ctrlId}"></div></div>`;
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    list.forEach(show => grid.appendChild(buildCard(show)));
+    section.appendChild(grid);
+    if(sortKey) buildSortControl(section.querySelector("#" + ctrlId), sortKey, renderGrid);
+    return section;
+  }
+
+  function fillRow(rowEl, five, sixth, onMore){
+    rowEl.innerHTML = "";
+    five.forEach(s => rowEl.appendChild(buildCard(s)));
+    if(!sixth) return; // fewer than six: just leave empty space
+    rowEl.appendChild(buildCard(sixth));
+    const cover = document.createElement("div");
+    cover.className = "rowcover";
+    const btn = document.createElement("button");
+    btn.className = "rowmorebtn";
+    btn.title = "Show more";
+    btn.innerHTML = arrowSvg("right");
+    btn.addEventListener("click", onMore);
+    cover.appendChild(btn);
+    rowEl.appendChild(cover);
+  }
+  function getLatestShows(){
+    return CATALOG.filter(s => isAvailable(s) && !s.onlyYt && (showHidden || !hiddenSet.has(s.slug)))
+      .map(s => ({ s, d: getLatestDate(s) })).filter(x => x.d)
+      .sort((a, b) => b.d - a.d).map(x => x.s);
+  }
+  function renderLatestRow(){
+    const list = getLatestShows();
+    if(currentTab !== "browse" || !list.length){
+      latestWrap.style.display = "none";
+      latestRow.innerHTML = "";
+      return;
+    }
+    latestWrap.style.display = "block";
+    document.getElementById("latestCount").textContent = list.length + " show" + (list.length===1?"":"s");
+    fillRow(latestRow, list.slice(0, 5), list[5], () => switchTab("latest"));
+  }
+
+  function renderFavRow(){
+    if(currentTab !== "browse" || favOrder.length === 0){
+      favWrap.style.display = "none";
+      favRow.innerHTML = "";
+      return;
+    }
+    const eligible = favOrder.filter(slug => {
+      const show = CATALOG.find(s => s.slug === slug);
+      return show && !isDimension20(show) && (showHidden || !hiddenSet.has(show.slug));
+    });
+    if(eligible.length === 0){
+      favWrap.style.display = "none";
+      favRow.innerHTML = "";
+      return;
+    }
+    favWrap.style.display = "block";
+    favRow.style.display = "flex";
+    const recent = eligible.slice().reverse(); // newest favourite first
+    const five = recent.slice(0, 5).map(slug => CATALOG.find(s => s.slug === slug)).filter(Boolean);
+    if(sortState.favrow.dir !== "desc") five.reverse();
+    const sixth = CATALOG.find(s => s.slug === recent[5]);
+    fillRow(favRow, five, sixth, () => switchTab("favorites"));
+  }
+
+  function renderFavRowD20(){
+    if(currentTab !== "d20" || favOrder.length === 0){
+      favWrapD20.style.display = "none";
+      favRowD20.innerHTML = "";
+      return;
+    }
+    const eligible = favOrder.filter(slug => {
+      const show = CATALOG.find(s => s.slug === slug);
+      return show && isDimension20(show) && (showHidden || !hiddenSet.has(show.slug));
+    });
+    if(eligible.length === 0){
+      favWrapD20.style.display = "none";
+      favRowD20.innerHTML = "";
+      return;
+    }
+    favWrapD20.style.display = "block";
+    favRowD20.style.display = "flex";
+    const recent = eligible.slice().reverse();
+    const five = recent.slice(0, 5).map(slug => CATALOG.find(s => s.slug === slug)).filter(Boolean);
+    if(sortState.favrowD20.dir !== "desc") five.reverse();
+    const sixth = CATALOG.find(s => s.slug === recent[5]);
+    fillRow(favRowD20, five, sixth, () => switchTab("favorites"));
+  }
+
+  function renderGrid(){
+    renderFavRow();
+    renderFavRowD20();
+    renderLatestRow();
+    const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    let list = CATALOG.filter(s => showHidden || !hiddenSet.has(s.slug));
+    if(query) list = list.filter(s => s.name.toLowerCase().includes(query));
+
+    sectionsWrap.innerHTML = "";
+
+    if(currentTab === "favorites"){
+      pageTitle.textContent = "My List";
+      const favList = list.filter(s => favs.has(s.slug));
+      if(favList.length === 0){
+        shownCount.textContent = "";
+        showEmpty("No favorites yet \u2014 star a show to add it here.");
+        return;
+      }
+      emptyMsg.style.display = "none";
+      shownCount.textContent = favList.length + " show" + (favList.length===1?"":"s");
+      const d20Fav = favList.filter(s => isDimension20(s));
+      const otherFav = favList.filter(s => !isDimension20(s));
+      [
+        buildSection("All Shows", sortShowsBy(otherFav, "mylist"), "mylist", "mylist-all"),
+        buildSection("Dimension 20", sortShowsBy(d20Fav, "mylistD20"), "mylistD20", "mylist-d20")
+      ].forEach(sec => { if(sec) sectionsWrap.appendChild(sec); });
+      return;
+    }
+
+    if(currentTab === "latest"){
+      pageTitle.textContent = "Latest";
+      const latestList = getLatestShows().filter(s => list.includes(s));
+      if(latestList.length === 0){
+        shownCount.textContent = "";
+        showEmpty("Nothing to show yet.");
+        return;
+      }
+      emptyMsg.style.display = "none";
+      shownCount.textContent = latestList.length + " show" + (latestList.length===1?"":"s");
+      const sec = buildSection("Latest releases", latestList, null, "latest-all");
+      if(sec) sectionsWrap.appendChild(sec);
+      return;
+    }
+
+    if(currentTab === "d20"){
+      pageTitle.textContent = "Dimension 20";
+      const d20List = list.filter(s => isDimension20(s));
+      if(d20List.length === 0){
+        shownCount.textContent = "";
+        showEmpty("No shows match your search.");
+        return;
+      }
+      emptyMsg.style.display = "none";
+      shownCount.textContent = d20List.length + " show" + (d20List.length===1?"":"s");
+      const sec = buildSection("Dimension 20", sortShowsBy(d20List, "d20"), "d20", "d20-all");
+      if(sec) sectionsWrap.appendChild(sec);
+      return;
+    }
+
+    pageTitle.textContent = "All Shows";
+    if(list.length === 0){
+      shownCount.textContent = "";
+      showEmpty("No shows match your search.");
+      return;
+    }
+    emptyMsg.style.display = "none";
+    shownCount.textContent = list.length + " show" + (list.length===1?"":"s");
+
+    const nonD20 = list.filter(s => !isDimension20(s));
+    const notOnYoutube = nonD20.filter(s => !isAvailable(s));
+    const onlyYt = nonD20.filter(s => s.onlyYt && isAvailable(s));
+    const available = nonD20.filter(s => isAvailable(s) && !s.onlyYt);
+    const topShows = available.filter(s => effectiveCategory(s) === "top");
+    const otherShows = available.filter(s => effectiveCategory(s) === "other");
+
+    [
+      buildSection("Top Shows", sortShowsBy(topShows, "browse"), "browse", "top"),
+      buildSection("Other Shows", sortShowsBy(otherShows, "browse"), "browse", "other"),
+      buildSection("Only on YouTube", sortShowsBy(onlyYt, "browse"), "browse", "onlyyt"),
+      buildSection("Not on YouTube", sortShowsBy(notOnYoutube, "browse"), "browse", "notyt")
+    ].forEach(sec => { if(sec) sectionsWrap.appendChild(sec); });
+  }
+
+  // ---------- Show modal ----------
+  const showModalBackdrop = document.getElementById("showModalBackdrop");
+  const heroImgWrap = document.getElementById("heroImgWrap");
+  const heroTitle = document.getElementById("heroTitle");
+  const heroMeta = document.getElementById("heroMeta");
+  const seasonSelect = document.getElementById("seasonSelect");
+  const prevSeasonBtn = document.getElementById("prevSeasonBtn");
+  const nextSeasonBtn = document.getElementById("nextSeasonBtn");
+  const openPlaylistBtn = document.getElementById("openPlaylistBtn");
+  const sortDirBtn = document.getElementById("sortDirBtn");
+  const epGrid = document.getElementById("epGrid");
+  const epLoading = document.getElementById("epLoading");
+  const epCount = document.getElementById("epCount");
+  const favBtnModal = document.getElementById("favBtnModal");
+  const coverBtnModal = document.getElementById("coverBtnModal");
+  let epSortDir = "asc"; // "asc" = oldest first, "desc" = newest first
+
+  function heroImageHtml(show, playlists){
+    if(covers[show.slug]) return `<img src="${covers[show.slug]}" alt="">`;
+    if(COVERS[show.slug]) return `<img src="${coverUrl(COVERS[show.slug], 1280, 480)}" alt="">`;
+    const t = playlists && playlists[0] ? bestThumb(playlists[0].snippet.thumbnails) : "";
+    if(t) return `<img src="${t}" alt="">`;
+    return `<div class="placeholder">${show.name}</div>`;
+  }
+
+  function openShow(show){
+    currentShow = show;
+    if(badges[show.slug]){
+      delete badges[show.slug];
+      setJSON(LS.badges, badges);
+      renderGrid();
+    }
+    const playlists = (matchIndex[show.slug] || []).slice().sort((a, b) => {
+      const sa = extractSeason(a.snippet.title), sb = extractSeason(b.snippet.title);
+      if(sa != null && sb != null) return sa - sb;
+      if(sa != null) return -1;
+      if(sb != null) return 1;
+      return 0;
+    });
+    currentPlaylists = playlists;
+    heroImgWrap.innerHTML = heroImageHtml(show, playlists);
+    heroTitle.textContent = show.name;
+    heroMeta.textContent = show.blurb;
+    updateFavBtn();
+
+    seasonSelect.innerHTML = "";
+    playlists.forEach((pl) => {
+      const opt = document.createElement("option");
+      opt.value = pl.id;
+      const s = extractSeason(pl.snippet.title);
+      opt.textContent = playlists.length > 1 ? (s ? "Season " + s : pl.snippet.title) : "All episodes";
+      seasonSelect.appendChild(opt);
+    });
+    seasonSelect.style.display = playlists.length > 1 ? "inline-block" : "none";
+    const remembered = lastSeason[show.slug];
+    if(remembered && playlists.some(pl => pl.id === remembered)){
+      seasonSelect.value = remembered;
+    }else if(playlists.length > 1){
+      seasonSelect.value = defaultSeasonPref === "first" ? playlists[0].id : playlists[playlists.length - 1].id;
+    }
+    updateSeasonNavButtons();
+
+    showModalBackdrop.style.display = "block";
+    document.body.style.overflow = "hidden";
+    if(playlists.length) loadAndRenderEpisodes(seasonSelect.value || playlists[0].id);
+  }
+
+  function updateSeasonNavButtons(){
+    const idx = currentPlaylists.findIndex(pl => pl.id === seasonSelect.value);
+    prevSeasonBtn.disabled = !(idx > 0);
+    nextSeasonBtn.disabled = !(idx >= 0 && idx < currentPlaylists.length - 1);
+  }
+
+  function goToSeason(idx){
+    if(idx < 0 || idx >= currentPlaylists.length) return;
+    const pl = currentPlaylists[idx];
+    seasonSelect.value = pl.id;
+    lastSeason[currentShow.slug] = pl.id;
+    setJSON(LS.lastSeason, lastSeason);
+    updateSeasonNavButtons();
+    loadAndRenderEpisodes(pl.id);
+  }
+
+  function updateFavBtn(){
+    favBtnModal.textContent = favs.has(currentShow.slug) ? "\u2605 In My List" : "\u2606 My List";
+  }
+  favBtnModal.addEventListener("click", () => {
+    toggleFavorite(currentShow.slug);
+    updateFavBtn();
+  });
+  coverBtnModal.addEventListener("click", () => {
+    const url = prompt("Paste an image URL to use as this show's cover:", covers[currentShow.slug] || "");
+    if(url !== null){
+      if(url.trim() === "") delete covers[currentShow.slug]; else covers[currentShow.slug] = url.trim();
+      setJSON(LS.covers, covers);
+      heroImgWrap.innerHTML = heroImageHtml(currentShow, matchIndex[currentShow.slug] || []);
+    }
+  });
+
+  seasonSelect.addEventListener("change", () => {
+    lastSeason[currentShow.slug] = seasonSelect.value;
+    setJSON(LS.lastSeason, lastSeason);
+    updateSeasonNavButtons();
+    loadAndRenderEpisodes(seasonSelect.value);
+  });
+  prevSeasonBtn.addEventListener("click", () => {
+    const idx = currentPlaylists.findIndex(pl => pl.id === seasonSelect.value);
+    goToSeason(idx - 1);
+  });
+  nextSeasonBtn.addEventListener("click", () => {
+    const idx = currentPlaylists.findIndex(pl => pl.id === seasonSelect.value);
+    goToSeason(idx + 1);
+  });
+  openPlaylistBtn.addEventListener("click", () => {
+    if(currentPlaylistId) window.open("https://www.youtube.com/playlist?list=" + currentPlaylistId, "_blank");
+  });
+  sortDirBtn.addEventListener("click", () => {
+    epSortDir = epSortDir === "asc" ? "desc" : "asc";
+    sortDirBtn.innerHTML = arrowSvg(epSortDir === "asc" ? "up" : "down");
+    sortDirBtn.title = epSortDir === "asc" ? "Oldest first" : "Newest first";
+    renderEpisodes(window._eps || []);
+  });
+
+  async function loadAndRenderEpisodes(playlistId){
+    currentPlaylistId = playlistId;
+    epGrid.innerHTML = "";
+    epLoading.textContent = "Loading episodes\u2026";
+    epLoading.style.display = "block";
+    epCount.textContent = "";
+    try{
+      const episodes = await loadEpisodes(playlistId, false);
+      window._eps = episodes;
+      renderEpisodes(episodes);
+    }catch(e){
+      epGrid.innerHTML = "";
+      epLoading.textContent = "Couldn't load episodes: " + e.message;
+      epLoading.style.display = "block";
+      return;
+    }
+    epLoading.style.display = "none";
+  }
+
+  function toggleAllPrevious(episodes, ep){
+    const previous = episodes.filter(e => e.position <= ep.position);
+    if(previous.length === 0) return;
+    const allWatched = previous.every(e => watched.has(e.videoId));
+    previous.forEach(e => {
+      if(allWatched) watched.delete(e.videoId); else watched.add(e.videoId);
+    });
+    setJSON(LS.watched, Array.from(watched));
+    renderEpisodes(episodes);
+  }
+
+  const EXTRA_TITLE_PATTERNS = [
+    /\btrailer\b/i,
+    /\bteaser\b/i,
+    /behind\s+the\s+scenes/i,
+    /\bbts\b/i,
+    /bonus\s+(content|clip|episode|scene)\b/i,
+    /sneak\s+peek/i,
+    /first\s+look/i,
+    /cut\s+for\s+time/i,
+    /last\s+looks/i,
+    /\bcoming\s+soon\b/i,
+    /\bpromo\b/i,
+    /\bannouncement\b/i
+  ];
+  function isExtraEpisode(title){
+    return EXTRA_TITLE_PATTERNS.some(re => re.test(title || ""));
+  }
+
+  function renderEpisodes(episodes){
+    const byPosition = episodes.slice().sort((a,b) => a.position - b.position);
+    const labels = {};
+    let n = 0;
+    byPosition.forEach(ep => {
+      if(isExtraEpisode(ep.title)){
+        labels[ep.videoId] = "EXTRA";
+      }else{
+        n++;
+        labels[ep.videoId] = "Episode " + n;
+      }
+    });
+
+    const sorted = episodes.slice().sort((a,b) =>
+      epSortDir === "desc" ? b.position - a.position : a.position - b.position);
+    epCount.textContent = sorted.length + " episode" + (sorted.length===1?"":"s");
+    epGrid.innerHTML = "";
+    sorted.forEach((ep, idx) => {
+      const isWatched = watched.has(ep.videoId);
+      const card = document.createElement("div");
+      card.className = "epcard" + (isWatched ? " watched" : "");
+      card.innerHTML = `
+        <div class="thumbwrap">
+          <img src="${ep.thumb}" alt="">
+          <div class="duration">${ep.duration}</div>
+          <button class="bulkwatch" title="Mark this and all previous episodes watched/unwatched">&#8592;</button>
+          <button class="watchtoggle" title="Toggle watched">${isWatched ? "&#10003;" : "&#9675;"}</button>
+        </div>
+        <div class="eptitle">${ep.title}</div>
+        <div class="epsub">${labels[ep.videoId]}</div>`;
+      card.querySelector(".bulkwatch").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleAllPrevious(episodes, ep);
+      });
+      card.querySelector(".watchtoggle").addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleWatched(ep.videoId);
+        const nowWatched = watched.has(ep.videoId);
+        card.classList.toggle("watched", nowWatched);
+        card.querySelector(".watchtoggle").innerHTML = nowWatched ? "&#10003;" : "&#9675;";
+      });
+      card.addEventListener("click", () => {
+        window.open("https://www.youtube.com/watch?v=" + ep.videoId + "&list=" + currentPlaylistId + "&index=" + (ep.position+1), "_blank");
+        if(!watched.has(ep.videoId)){
+          toggleWatched(ep.videoId);
+          card.classList.add("watched");
+          card.querySelector(".watchtoggle").innerHTML = "&#10003;";
+        }
+      });
+      epGrid.appendChild(card);
+    });
+  }
+
+  function toggleWatched(videoId){
+    if(watched.has(videoId)) watched.delete(videoId); else watched.add(videoId);
+    setJSON(LS.watched, Array.from(watched));
+  }
+
+  function closeShowModal(){
+    showModalBackdrop.style.display = "none";
+    document.body.style.overflow = "";
+    currentShow = null;
+    renderGrid();
+  }
+  showModalBackdrop.addEventListener("click", (e) => { if(e.target === showModalBackdrop) closeShowModal(); });
+  document.querySelector('[data-closemodal="show"]').addEventListener("click", closeShowModal);
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Escape" && showModalBackdrop.style.display === "block") closeShowModal();
+  });
+
+  // ---------- Nav / tabs ----------
+  function switchTab(tab){
+    currentTab = tab;
+    document.querySelectorAll("nav.links .tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+    renderGrid();
+  }
+  document.querySelectorAll("nav.links .tab").forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+  document.getElementById("searchInput").addEventListener("input", renderGrid);
+  buildFavDirControl(document.getElementById("favSortCtrl"), "favrow", renderGrid);
+  buildFavDirControl(document.getElementById("favSortCtrlD20"), "favrowD20", renderGrid);
+
+  // ---------- Sticky bar offset ----------
+  function setNavHeight(){
+    const navEl = document.querySelector("header.nav");
+    if(navEl) document.documentElement.style.setProperty("--navh", navEl.offsetHeight + "px");
+  }
+  setNavHeight();
+  window.addEventListener("resize", setNavHeight);
+
+  // ---------- Setup / settings ----------
+  const setupOverlay = document.getElementById("setupOverlay");
+  const settingsOverlay = document.getElementById("settingsOverlay");
+
+  function checkSetup(){
+    if(!apiKey){
+      setupOverlay.style.display = "flex";
+      renderGrid();
+    }else{
+      setupOverlay.style.display = "none";
+      loadPlaylists(false);
+    }
+  }
+  document.getElementById("saveKeyBtn").addEventListener("click", () => {
+    const val = document.getElementById("apiKeyInput").value.trim();
+    if(!val) return;
+    apiKey = val;
+    localStorage.setItem(LS.key, apiKey);
+    checkSetup();
+  });
+  document.getElementById("saveKeyBtn2").addEventListener("click", () => {
+    const val = document.getElementById("apiKeyInput2").value.trim();
+    if(!val) return;
+    apiKey = val;
+    localStorage.setItem(LS.key, apiKey);
+    settingsOverlay.style.display = "none";
+    loadPlaylists(false);
+  });
+  document.getElementById("settingsBtn").addEventListener("click", () => {
+    document.getElementById("apiKeyInput2").value = apiKey;
+    document.getElementById("defaultSeasonFirst").checked = defaultSeasonPref === "first";
+    document.getElementById("defaultSeasonLatest").checked = defaultSeasonPref === "latest";
+    syncHiddenUI();
+    settingsOverlay.style.display = "flex";
+  });
+  const showHiddenChk = document.getElementById("showHiddenChk");
+  showHiddenChk.addEventListener("change", () => {
+    showHidden = showHiddenChk.checked;
+    localStorage.setItem(LS.showHidden, showHidden ? "1" : "0");
+    renderGrid();
+  });
+  function syncHiddenUI(){
+    showHiddenChk.checked = showHidden;
+    document.getElementById("hiddenCount").textContent = "(" + hiddenSet.size + " hidden)";
+  }
+  document.querySelectorAll('input[name="defaultSeason"]').forEach(radio => {
+    radio.addEventListener("change", () => {
+      defaultSeasonPref = radio.value;
+      localStorage.setItem(LS.defaultSeason, defaultSeasonPref);
+    });
+  });
+  document.querySelectorAll("[data-close]").forEach(btn => {
+    btn.addEventListener("click", () => document.getElementById(btn.dataset.close).style.display = "none");
+  });
+  document.getElementById("refreshBtn").addEventListener("click", () => { if(apiKey) loadPlaylists(true); });
+  document.getElementById("forceRefreshBtn").addEventListener("click", () => {
+    if(apiKey) loadPlaylists(true);
+    settingsOverlay.style.display = "none";
+  });
+  document.getElementById("clearWatchedBtn").addEventListener("click", () => {
+    if(confirm("Clear all watched history?")){
+      watched = new Set();
+      setJSON(LS.watched, []);
+      alert("Done.");
+    }
+  });
+  document.getElementById("clearAllBtn").addEventListener("click", () => {
+    if(confirm("This clears your API key, watched history, favorites, custom covers and cached data. Continue?")){
+      localStorage.clear();
+      location.reload();
+    }
+  });
+
+  document.getElementById("exportDataBtn").addEventListener("click", () => {
+    const data = {};
+    Object.keys(localStorage).forEach(k => {
+      if(k.startsWith("ddb_")) data[k] = localStorage.getItem(k);
+    });
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dropout-browser-data.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function importDataFlow(){
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json";
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(reader.result);
+          Object.keys(data).forEach(k => {
+            if(k.startsWith("ddb_")) localStorage.setItem(k, data[k]);
+          });
+          alert("Imported. Reloading…");
+          location.reload();
+        }catch(e){
+          alert("Couldn't read that file: " + e.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+    input.click();
+  }
+  document.getElementById("importDataBtn").addEventListener("click", importDataFlow);
+  document.getElementById("importDataBtnSetup").addEventListener("click", importDataFlow);
+  settingsOverlay.addEventListener("click", (e) => { if(e.target === settingsOverlay) settingsOverlay.style.display = "none"; });
+
+  checkSetup();
+})();
+</script>
+</body>
+</html>
