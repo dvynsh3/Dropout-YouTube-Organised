@@ -4,7 +4,7 @@ A fully client-side browser for [Dropout.tv](https://www.dropout.tv)'s public Yo
 
 **Live:** https://dvynsh3.github.io/Dropout-YouTube-Organised
 
-![Screenshot](assets/"Screenshot 2026-11-22 004239.png")
+![Screenshot](assets/screenshot.png)
 
 ## Pre-requisites
 - You will need an active YouTube membership to Dropout's YouTube channel, this doesn't bypass that, only categorises the content better than YouTube's native playlists page.
@@ -24,7 +24,7 @@ A fully client-side browser for [Dropout.tv](https://www.dropout.tv)'s public Yo
 - **Only on YouTube** section: playlists with no matching Dropout show (including "Free Episodes" ones), grouped into seasons by similar name
 - Right-click a card to set a custom cover, move between Top/Other, or hide it (Settings → "Show hidden shows" brings them back)
 - Export / Import of all your data (including API key)
-- Playback links out to YouTube, no videos hosted or played in 
+- Playback links out to YouTube, no videos hosted or played in the app
 
 ## Data and privacy
 API key, favourites, watched history, covers and settings live only in your browser. The only network calls go to the YouTube Data API and to image hosts for show covers. `localStorage` is per-origin: use **Settings → Export data / Import data** to move between copies.
