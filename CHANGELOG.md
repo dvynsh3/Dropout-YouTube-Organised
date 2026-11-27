@@ -2,11 +2,20 @@
 
 All notable changes to **Dropout YouTube Organised** (originally "Dropout Browser (Local)") are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every release is a pre-release, tagged `v1`–`v21` (there is no `v12`: it was an exact duplicate of `v11` and was dropped; numbering was not shifted). Entries are newest first. Where a change corrects, refines or removes something from an earlier release, the entry says so and links back to the release that introduced it, so a feature's full story can be followed across versions.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Releases `v1`–`v20` were pre-releases (there is no `v12`: it was an exact duplicate of `v11` and was dropped; numbering was not shifted). From `v1.0.4` onward the project uses semantic-style version numbers; `v1.0.4` is the build previously labelled v21 and `v1.0.5` the one previously labelled v22. Entries are newest first. Where a change corrects, refines or removes something from an earlier release, the entry says so and links back to the release that introduced it, so a feature's full story can be followed across versions.
 
 Dates are IST. From v18 the project is licensed under GPL-3.0-or-later.
 
-## [v21] - 2026-11-27
+## [v1.0.5] - 2026-11-27
+### Fixed
+- **Dice kept re-rolling for several seconds** (v1.0.4). The die now does one continuous spin that ends as soon as the pick is ready (about 0.7s when the answer is already known). Series picks with a Watched/Unwatched filter no longer load episode lists when the app already knows a season qualifies; episode picks now try at most 8 seasons instead of 12.
+- **Blank `about:blank` tab with no message** (v1.0.4). The pool is now checked before any tab is opened, and an empty pool shows "Nothing matches your pool filters." Failed picks close the pre-opened tab (it previously could be left behind), and errors during a pick are caught instead of leaving the button stuck.
+
+### Changed
+- Pool label "Main shows (no Dimension 20)" is now just **Main shows**.
+- **Show hidden shows** checkbox added to the random options card, linked to the Settings toggle (changing either updates the other).
+
+## [v1.0.4] - 2026-11-27
 ### Added
 - **Random button** (dice icon) before the All Shows tab. One click spins the die (it lands on a random face 1-6 each time, and also flips to a new face by itself every 20 seconds) and opens a random episode on YouTube in a new tab. The link is a standalone video link with no playlist attached. Extras, trailers and bonus content are never picked.
 - **Right-click (long-press on touch) options card** on the dice: Pool filters, Type options and a Previous-pick button.

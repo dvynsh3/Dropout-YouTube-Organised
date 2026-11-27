@@ -1719,11 +1719,7 @@
     settingsOverlay.style.display = "flex";
   });
   const showHiddenChk = document.getElementById("showHiddenChk");
-  showHiddenChk.addEventListener("change", () => {
-    showHidden = showHiddenChk.checked;
-    localStorage.setItem(LS.showHidden, showHidden ? "1" : "0");
-    renderGrid();
-  });
+  showHiddenChk.addEventListener("change", () => setShowHidden(showHiddenChk.checked));
   function syncHiddenUI(){
     showHiddenChk.checked = showHidden;
     document.getElementById("hiddenCount").textContent = "(" + hiddenSet.size + " hidden)";
@@ -1838,7 +1834,13 @@
   async function rollWhile(promise){
     let done = false;
     promise.then(() => { done = true; }, () => { done = true; });
-    do { await spin(650, 5); } while(!done);
+    const anim = diceInner.animate(
+      [{ transform:"rotate(0deg) rotateX(0deg)" }, { transform:"rotate(360deg) rotateX(360deg)" }],
+      { duration: 700, iterations: Infinity, easing: "linear" });
+    const t = setInterval(() => setFace(newFace()), 110);
+    const start = Date.now();
+    while(!done || Date.now() - start < 700) await new Promise(r => setTimeout(r, 40));
+    clearInterval(t); anim.cancel(); setFace(newFace());
   }
   // Every 20 seconds the die flips by itself to a new face.
   setInterval(() => { if(!rolling && !document.hidden) spin(500, 3); }, 20000);
@@ -1883,21 +1885,38 @@
     if(!base || base < 120) return 0;
     return Math.floor((0.25 + Math.random() * 0.5) * base);
   }
-  async function pickRandom(){
+  function buildCands(){
     const shows = CATALOG.filter(s => isAvailable(s) && (showHidden || !hiddenSet.has(s.slug)) && showPasses(s));
     const cands = [];
-    shows.forEach(s => (matchIndex[s.slug] || []).forEach(p =>
-      cands.push({ show: s, pl: p, w: Math.max(1, (p.contentDetails && p.contentDetails.itemCount) || 1) })));
-    if(!cands.length) return { err: "No shows match your pool filters." };
+    shows.forEach(s => (matchIndex[s.slug] || []).forEach(p => {
+      const ic = (p.contentDetails && p.contentDetails.itemCount) || 0;
+      const m = epMeta[p.id];
+      const known = !!(m && m.ic === ic);
+      let w = Math.max(1, ic);
+      if(known){
+        const q = m.ids.filter(id => epPasses({ videoId: id })).length;
+        if(!q) return;               // we already know nothing in here qualifies
+        w = q;
+      }
+      cands.push({ show: s, pl: p, w, known });
+    }));
+    return cands;
+  }
+  async function pickRandom(all){
+    const cands = all.slice();
     const needEp = randOpts.type === "episode" || randOpts.watched !== 0 || randOpts.unwatched !== 0;
     if(!needEp) return { show: cands[weightedIndex(cands)].show };
-    for(let tries = 0; tries < 12 && cands.length; tries++){
+    for(let tries = 0; tries < 8 && cands.length; tries++){
       const c = cands.splice(weightedIndex(cands), 1)[0];
+      if(randOpts.type === "series" && c.known) return { show: c.show };   // already known to contain a match: no loading needed
       let eps;
       try{ eps = await loadEpisodes(c.pl.id, false); }
       catch(e){ return { err: "Couldn't load episodes: " + e.message }; }
       const pool = eps.filter(e => e.videoId && !isExtraEpisode(e.title) && epPasses(e));
-      if(pool.length) return { show: c.show, pl: c.pl, ep: pool[Math.floor(Math.random() * pool.length)], eps };
+      if(pool.length){
+        if(randOpts.type === "series") return { show: c.show };
+        return { show: c.show, pl: c.pl, ep: pool[Math.floor(Math.random() * pool.length)], eps };
+      }
     }
     return { err: "Couldn't find an episode matching those filters." };
   }
@@ -1923,7 +1942,7 @@
   }
   function openEntry(entry, w){
     if(entry.kind === "yt"){
-      if(w && !w.closed) w.location.href = entry.url;
+      if(w && !w.closed){ try{ w.opener = null; }catch(e){} w.location.href = entry.url; }
       else window.open(entry.url, "_blank", "noopener");
     }else{
       if(w) w.close();
@@ -1936,13 +1955,18 @@
   }
   async function randomClick(){
     if(rolling) return;
+    const cands = buildCands();
+    if(!cands.length){ toast("Nothing matches your pool filters."); return; }   // checked before opening any tab
     rolling = true;
     const directTab = randOpts.type === "episode" && randOpts.direct;
     let w = null;
-    if(directTab){ w = window.open("about:blank", "_blank"); if(w) w.opener = null; } // opened inside the click so it isn't blocked
-    const p = pickRandom();
-    await rollWhile(p);
-    const res = await p;
+    if(directTab) w = window.open("about:blank", "_blank");   // opened inside the click so it isn't blocked
+    let res;
+    try{
+      const p = pickRandom(cands);
+      await rollWhile(p);
+      res = await p;
+    }catch(e){ res = { err: "Something went wrong: " + e.message }; }
     rolling = false;
     if(res.err){ if(w) w.close(); toast(res.err); return; }
     let entry, label;
@@ -1966,7 +1990,6 @@
     randPtr--;
     const e = randHist[randPtr];
     const w = e.kind === "yt" ? window.open("about:blank", "_blank") : null;
-    if(w) w.opener = null;
     refreshPrev();
     openEntry(e, w);
   }
@@ -1978,7 +2001,7 @@
   ["touchend", "touchmove", "touchcancel"].forEach(ev => diceBtn.addEventListener(ev, () => clearTimeout(lpTimer), { passive: true }));
 
   // ----- options card -----
-  const TRI_ROWS = [["favs","Favourites"],["main","Main shows (no Dimension 20)"],["d20","Dimension 20"],["watched","Watched episodes"],["unwatched","Unwatched episodes"]];
+  const TRI_ROWS = [["favs","Favourites"],["main","Main shows"],["d20","Dimension 20"],["watched","Watched episodes"],["unwatched","Unwatched episodes"]];
   function triSvg(st){
     if(st === 1) return '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="#fbe94a"/><path d="M6.5 12.5l3.8 3.8L17.5 8.5" stroke="#000" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     if(st === -1) return '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" fill="#e5484d"/><path d="M8 8l8 8M16 8l-8 8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>';
@@ -1987,6 +2010,13 @@
   function chkSvg(on){
     return on ? triSvg(1) : triSvg(0);
   }
+  function setShowHidden(v){   // shared with the Settings toggle
+    showHidden = v;
+    localStorage.setItem(LS.showHidden, v ? "1" : "0");
+    syncHiddenUI();
+    renderGrid();
+    if(randCardEl) renderRandCard();
+  }
   function saveRand(){ setJSON(RAND_KEY, randOpts); }
   function renderRandCard(){
     const ep = randOpts.type === "episode";
@@ -1994,6 +2024,7 @@
       <h4>Pool</h4>
       <div class="rc-hint">Tick = only these &middot; Cross = never these &middot; Blank = don't filter</div>
       ${TRI_ROWS.map(r => `<div class="rc-row" data-tri="${r[0]}"><span class="tri">${triSvg(randOpts[r[0]])}</span><span>${r[1]}</span></div>`).join("")}
+      <div class="rc-row" data-hid="1"><span class="chk">${chkSvg(showHidden)}</span><span>Show hidden shows</span></div>
       <div class="rc-sec"><h4>Type</h4></div>
       <label class="rc-row"><input type="radio" name="rtype" value="episode" ${ep ? "checked" : ""}><span>Episode</span></label>
       <label class="rc-row"><input type="radio" name="rtype" value="series" ${ep ? "" : "checked"}><span>Series (opens its page here)</span></label>
@@ -2006,6 +2037,7 @@
       randOpts[k] = randOpts[k] === 0 ? 1 : (randOpts[k] === 1 ? -1 : 0);
       saveRand(); renderRandCard();
     }));
+    randCardEl.querySelector("[data-hid]").addEventListener("click", () => setShowHidden(!showHidden));
     randCardEl.querySelectorAll("[data-chk]").forEach(row => row.addEventListener("click", () => {
       const k = row.dataset.chk; randOpts[k] = !randOpts[k]; saveRand(); renderRandCard();
     }));
