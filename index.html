@@ -932,10 +932,13 @@
     });
     const videoIds = items.map(i => i.contentDetails.videoId).filter(Boolean);
     const durations = {};
-    for(let i=0; i<videoIds.length; i+=50){
-      const chunk = videoIds.slice(i, i+50);
-      const vdata = await ytFetch("videos", { part:"contentDetails", id: chunk.join(",") });
-      (vdata.items||[]).forEach(v => { durations[v.id] = v.contentDetails.duration; });
+    const chunks = [];
+    for(let i=0; i<videoIds.length; i+=50) chunks.push(videoIds.slice(i, i+50));
+    for(let i=0; i<chunks.length; i+=6){      // six requests at a time instead of one at a time
+      await Promise.all(chunks.slice(i, i+6).map(async chunk => {
+        const vdata = await ytFetch("videos", { part:"contentDetails", id: chunk.join(",") });
+        (vdata.items||[]).forEach(v => { durations[v.id] = v.contentDetails.duration; });
+      }));
     }
     const episodes = items.map((it,idx) => ({
       videoId: it.contentDetails.videoId,
@@ -1889,6 +1892,7 @@
     const shows = CATALOG.filter(s => isAvailable(s) && (showHidden || !hiddenSet.has(s.slug)) && showPasses(s));
     const cands = [];
     shows.forEach(s => (matchIndex[s.slug] || []).forEach(p => {
+      if(/^\s*latest\b/i.test((p.snippet && p.snippet.title) || "")) return;
       const ic = (p.contentDetails && p.contentDetails.itemCount) || 0;
       const m = epMeta[p.id];
       const known = !!(m && m.ic === ic);
@@ -1902,6 +1906,54 @@
     }));
     return cands;
   }
+  // ---- big playlists: fetch ONE random page (50 items) instead of the whole list ----
+  const FAST_MIN = 100;
+  function pageToken(offset){            // YouTube page tokens are just an encoded offset
+    const b = [0x08]; let n = offset;
+    while(n > 127){ b.push((n & 127) | 128); n >>= 7; }
+    b.push(n, 0x10, 0x00);
+    return btoa(String.fromCharCode.apply(null, b)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  async function fetchPage(plId, offset){
+    const base = { part: "snippet,contentDetails", playlistId: plId, maxResults: 50 };
+    if(offset === 0) return (await ytFetch("playlistItems", base)).items || [];
+    try{                                 // 1 request: jump straight to the page, and check we really landed there
+      const d = await ytFetch("playlistItems", Object.assign({ pageToken: pageToken(offset) }, base));
+      const it = d.items || [];
+      if(it.length && it[0].snippet && it[0].snippet.position === offset) return it;
+    }catch(e){}
+    let tok = null, items = [];          // fallback: walk the pages one by one up to the one we want
+    for(let o = 0; o <= offset; o += 50){
+      const d = await ytFetch("playlistItems", tok ? Object.assign({ pageToken: tok }, base) : base);
+      items = d.items || []; tok = d.nextPageToken;
+      if(!tok) break;
+    }
+    return items;
+  }
+  async function pickFromBigPlaylist(c){
+    const ic = c.pl.contentDetails.itemCount;
+    for(let t = 0; t < 6; t++){
+      const off = Math.floor(Math.floor(Math.random() * ic) / 50) * 50;   // random item number -> its page
+      const items = await fetchPage(c.pl.id, off);
+      const eps = items.map((it, k) => ({
+        videoId: it.contentDetails && it.contentDetails.videoId,
+        title: it.snippet.title,
+        thumb: bestThumb(it.snippet.thumbnails),
+        position: it.snippet.position != null ? it.snippet.position : off + k,
+        duration: ""
+      })).filter(e => e.videoId && e.title !== "Private video" && e.title !== "Deleted video");
+      const pool = eps.filter(e => !isExtraEpisode(e.title) && epPasses(e));
+      if(pool.length) return { ep: pool[Math.floor(Math.random() * pool.length)], eps };
+    }
+    return null;
+  }
+  async function fillDuration(ep){
+    try{
+      const d = await ytFetch("videos", { part: "contentDetails", id: ep.videoId });
+      const v = (d.items || [])[0];
+      if(v) ep.duration = parseISODuration(v.contentDetails.duration);
+    }catch(e){}
+  }
   async function pickRandom(all){
     const cands = all.slice();
     const needEp = randOpts.type === "episode" || randOpts.watched !== 0 || randOpts.unwatched !== 0;
@@ -1909,6 +1961,17 @@
     for(let tries = 0; tries < 8 && cands.length; tries++){
       const c = cands.splice(weightedIndex(cands), 1)[0];
       if(randOpts.type === "series" && c.known) return { show: c.show };   // already known to contain a match: no loading needed
+      const ic = (c.pl.contentDetails && c.pl.contentDetails.itemCount) || 0;
+      const cc = getJSON(LS.epCachePrefix + c.pl.id, null);
+      if(ic > FAST_MIN && !(cc && Date.now() - cc.ts < CACHE_TTL)){
+        let r;
+        try{ r = await pickFromBigPlaylist(c); }
+        catch(e){ return { err: "Couldn't load episodes: " + e.message }; }
+        if(!r) continue;
+        if(randOpts.type === "series") return { show: c.show };
+        if(randOpts.stamp && randOpts.direct) await fillDuration(r.ep);
+        return { show: c.show, pl: c.pl, ep: r.ep, eps: r.eps };
+      }
       let eps;
       try{ eps = await loadEpisodes(c.pl.id, false); }
       catch(e){ return { err: "Couldn't load episodes: " + e.message }; }
