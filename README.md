@@ -27,8 +27,9 @@
 
 <!-- SCREENSHOT: key flow (optional, 1 to 3) -->
 ![The random pick card with Pool filters and Type options](docs/screenshots/dropout-youtube-organised-flow-1.png)
-![A season page with the randomly picked episode outlined in yellow](docs/screenshots/dropout-youtube-organised-flow-2.png)
-![The Only on YouTube section above Not on YouTube](docs/screenshots/dropout-youtube-organised-flow-3.png)
+![A show page with season controls and episode cards; extras are labelled EXTRA and watched episodes are greyed](docs/screenshots/dropout-youtube-organised-flow-2.png)
+
+Screenshots are from the author's own library. The "New Season" and "New Episode" ribbons on some cards were added to the images to show states that were not live when they were taken.
 
 ## Quick start
 1. Open the [live site](https://dvynsh3.github.io/Dropout-YouTube-Organised).
