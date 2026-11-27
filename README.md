@@ -23,7 +23,9 @@ A fully client-side browser for [Dropout.tv](https://www.dropout.tv)'s public Yo
 - New shows not in the built-in catalogue are picked up automatically
 - **Only on YouTube** section: playlists with no matching Dropout show (including "Free Episodes" ones), grouped into seasons by similar name
 - Right-click a card to set a custom cover, move between Top/Other, or hide it (Settings → "Show hidden shows" brings them back)
-- Export / Import of all your data (including API key)
+- Random button (dice): picks a random episode, with pool filters (favourites, Dimension 20, watched/unwatched), optional random start point and a Previous button; right-click the dice for options
+- "Caught up" ribbon on shows you have fully watched
+- Export / Import of your data (the API key is never exported)
 - Playback links out to YouTube, no videos hosted or played in the app
 
 ## Data and privacy

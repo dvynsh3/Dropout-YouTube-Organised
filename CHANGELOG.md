@@ -2,6 +2,29 @@
 
 All notable changes to **Dropout YouTube Organised** (originally "Dropout Browser (Local)") are documented here.
 
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every release is a pre-release, tagged `v1`–`v21` (there is no `v12`: it was an exact duplicate of `v11` and was dropped; numbering was not shifted). Entries are newest first. Where a change corrects, refines or removes something from an earlier release, the entry says so and links back to the release that introduced it, so a feature's full story can be followed across versions.
+
+Dates are IST. From v18 the project is licensed under GPL-3.0-or-later.
+
+## [v21] - 2026-11-27
+### Added
+- **Random button** (dice icon) before the All Shows tab. One click spins the die (it lands on a random face 1-6 each time, and also flips to a new face by itself every 20 seconds) and opens a random episode on YouTube in a new tab. The link is a standalone video link with no playlist attached. Extras, trailers and bonus content are never picked.
+- **Right-click (long-press on touch) options card** on the dice: Pool filters, Type options and a Previous-pick button.
+  - Pool: Favourites, Main shows (no Dimension 20), Dimension 20, Watched episodes, Unwatched episodes. Each is a three-state box: tick = only these, cross = never these, blank = no filter. Ticked sources are OR-ed, crossed ones are subtracted.
+  - Type: Episode or Series (opens the series page in the app); "Open episode directly on YouTube" (on by default; off = opens the series page and highlights the episode with a yellow outline for 6 seconds); "Random start point" (adds `&t=` between 1/4 and 3/4 of the season's typical episode length).
+  - Previous pick reopens earlier random picks, since the die refreshes on every click. Options are remembered.
+- **"Caught up" ribbon** (green) on shows where every non-extra episode in every season is watched. It is recalculated when seasons are opened or episodes are watched, and disappears if a new episode appears.
+- 34 custom covers from the author's saved data are now **built-in defaults** (a user's own custom cover still wins).
+- "Get a key" links (enable YouTube Data API v3, create an API key) under both API-key boxes.
+
+### Changed
+- **Export/Import no longer contains the API key**, nor caches or derived data, which also shrinks the file from about 350 KB to a few KB. Old export files that still contain a key are imported without it. The key stays only in the browser's `localStorage`.
+- Search icon is now a grey SVG instead of an emoji.
+
+### Fixed
+- Switching tabs kept the previous tab's scroll position (e.g. landing at the bottom of Dimension 20); each tab now opens at the top.
+- A race when two season loads overlapped could render the wrong season's episodes.
+
 ## [v20] - 2026-11-22
 ### Changed
 - Browser tab title changed from "Dropout Browser (Local)" to **"Dropout YT Organised"**.
