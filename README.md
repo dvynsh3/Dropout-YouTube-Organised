@@ -13,7 +13,7 @@
 
 ## Why this exists
 - **Who:** people who watch Dropout's shows on YouTube through the channel membership.
-- **Before:** the shows were a flat list of YouTube playlists that only sort by latest, with no grouping by show, no watched tracking and a playlist search that is not precise and makes mistakes. Getting back to the episode you had left off at took at least 3-4 minutes of manual searching (the author's own experience, not a timed study).
+- **Before:** the shows were a flat list of YouTube playlists that only sort by latest, with no grouping by show, no watched tracking and a playlist search that is not precise and makes mistakes. Getting back to the episode you had left off at took at least 3-4 minutes of manual searching.
 - **Now:** every show is a card, each season is one click away, new releases are flagged, and your progress is remembered in your browser.
 
 ## What it does
@@ -30,8 +30,6 @@
 ![A season page with the randomly picked episode outlined in yellow](docs/screenshots/dropout-youtube-organised-flow-2.png)
 ![The Only on YouTube section above Not on YouTube](docs/screenshots/dropout-youtube-organised-flow-3.png)
 
-Screenshots use dummy playlists and generated placeholder artwork, not real library data.
-
 ## Quick start
 1. Open the [live site](https://dvynsh3.github.io/Dropout-YouTube-Organised).
 2. In [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com), enable **YouTube Data API v3**, then [create an API key](https://console.cloud.google.com/apis/credentials).
@@ -45,7 +43,7 @@ Recommended: restrict the key to the YouTube Data API v3 and to the HTTP referre
 |---|---|---|
 | Each user brings their own YouTube API key, kept in the browser | A shared key or a backend | No server to run or pay for, and no key shared between strangers |
 | The API key is never exported or hashed | Including it in the export file; hashing it | A hash cannot be sent to YouTube, and exports are files people share |
-| Open episodes on YouTube in a new tab | An embedded player | The embedded player failed (error 153); YouTube also handles membership and autoplay |
+| Open episodes on YouTube in a new tab | An embedded player | Comments and other adjacent YouTube features would be inaccessible. |
 | A built-in show catalogue plus title matching and verified playlist IDs | Matching on titles alone | Titles drift between seasons, which hid seasons until IDs were added |
 | One self-contained HTML file | A framework and build step | Easy to host, inspect and fork |
 
