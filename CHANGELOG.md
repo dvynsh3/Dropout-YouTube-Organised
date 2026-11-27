@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Rel
 
 Dates are IST. From v18 the project is licensed under GPL-3.0-or-later.
 
+## [v1.0.6] - 2026-11-27
+### Fixed
+- **Random pick was very slow on huge playlists** (v1.0.4/v1.0.5). Picking the number was never the cost: YouTube only hands out a playlist in pages of 50, so the app downloaded every page one after another (a 1,400-video playlist took 28 requests), then looked up every video's length in another 28 requests, before choosing one episode. Large playlists (over 100 videos) that are not already saved now work like this: pick a random item number, jump straight to the 50-item page that holds it (1 request), choose an eligible episode from that page, and, only when "Random start point" is on, look up that one video's length (1 request). If YouTube ever rejects the jump, it falls back to walking the pages up to the one needed. Measured against a mock API with a 1,400-item playlist: 1 page request plus 1 length request per pick, down from about 56 requests.
+- Opening a season that has to be fully loaded now fetches video lengths six requests at a time instead of one at a time.
+
+### Changed
+- The channel's own "Latest" playlist is no longer part of the random pool (it repeats episodes from every other show and, being so large, was picked disproportionately).
+- With "Random start point" on, the start point is now between 1/4 and 3/4 of the picked video's own length for these large playlists.
+
 ## [v1.0.5] - 2026-11-27
 ### Fixed
 - **Dice kept re-rolling for several seconds** (v1.0.4). The die now does one continuous spin that ends as soon as the pick is ready (about 0.7s when the answer is already known). Series picks with a Watched/Unwatched filter no longer load episode lists when the app already knows a season qualifies; episode picks now try at most 8 seasons instead of 12.

@@ -29,6 +29,8 @@
 ![The random pick card with Pool filters and Type options](docs/screenshots/dropout-youtube-organised-flow-1.png)
 ![A show page with season controls and episode cards; extras are labelled EXTRA and watched episodes are greyed](docs/screenshots/dropout-youtube-organised-flow-2.png)
 
+Screenshots are from the author's own library. The "New Season" and "New Episode" ribbons on some cards were added to the images to show states that were not live when they were taken.
+
 ## Quick start
 1. Open the [live site](https://dvynsh3.github.io/Dropout-YouTube-Organised).
 2. In [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com), enable **YouTube Data API v3**, then [create an API key](https://console.cloud.google.com/apis/credentials).
