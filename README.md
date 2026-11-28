@@ -37,7 +37,7 @@ Screenshots are from the author's own library. The "New Season" and "New Episode
 1. Open the [live site](https://dvynsh3.github.io/Dropout-YouTube-Organised).
 2. In [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com), enable **YouTube Data API v3**, then [create an API key](https://console.cloud.google.com/apis/credentials).
 3. Paste the key into the setup box and choose **Save & load shows**.
-4. Expected result: the show grid fills in with your channel's playlists matched to shows. Click a show, pick a season, click an episode to watch it on YouTube.
+4. Expected result: the show grid fills in with Dropout's playlists matched to shows. Click a show, pick a season, click an episode to watch it on YouTube.
 
 Recommended: restrict the key to the YouTube Data API v3 and to the HTTP referrer `https://dvynsh3.github.io/*`. To run locally, open `index.html` in a browser.
 
