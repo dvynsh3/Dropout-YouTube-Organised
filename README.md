@@ -1,6 +1,8 @@
 # Dropout YouTube Organised
 
 > Dropout fans who watch through the channel's YouTube membership can browse the shows by show and season, track what they have watched and pick something at random, without digging through YouTube's flat playlist list.
+> 
+> Now with the "Random Episode" button, just roll the dice and have an entirely random episode play from your selected pool of series across all the videos on the Dropout YouTube channel.
 
 [![Licence: GPL-3.0-or-later](https://img.shields.io/badge/licence-GPL--3.0--or--later-blue)](LICENSE)
 [![Live demo](https://img.shields.io/badge/live-demo-brightgreen)](https://dvynsh3.github.io/Dropout-YouTube-Organised)
